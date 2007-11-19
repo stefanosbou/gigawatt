@@ -10,5 +10,5 @@
 			</list>
 		</constructor-arg>
 	</bean>
-
+    <!-- todo: Refactor to use just the BeanFactory and move fxoanda.xml to a classpath relative location. -->
 </beans>
