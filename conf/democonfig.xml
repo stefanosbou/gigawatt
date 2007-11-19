@@ -35,43 +35,43 @@
 	<markets>
 		<market product="GBP/JPY">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/GBPJPY.txt</filename>
+			<filename>resources/GBPJPY.txt</filename>
 		</market>
 		<market product="AUD/JPY">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.GainTickMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/AUDJPY.txt</filename>
+			<filename>resources/AUDJPY.txt</filename>
 		</market>
         <market product="GBP/AUD">
             <classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-            <filename>C:/projects/backtesttool/resources/GBPAUD.txt</filename>
+            <filename>resources/GBPAUD.txt</filename>
         </market>
         <market product="EUR/CHF">
             <classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-            <filename>C:/projects/backtesttool/resources/EURCHF.txt</filename>
+            <filename>resources/EURCHF.txt</filename>
         </market>
 		<market product="EUR/TRY">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/EURTRY.txt</filename>
+			<filename>resources/EURTRY.txt</filename>
 		</market>
 		<market product="GBP/USD">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/GBPUSD.txt</filename>
+			<filename>resources/GBPUSD.txt</filename>
 		</market>
 		<market product="NZD/USD">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/NZDUSD.txt</filename>
+			<filename>resources/NZDUSD.txt</filename>
 		</market>
 		<market product="USD/CAD">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/USDCAD.txt</filename>
+			<filename>resources/USDCAD.txt</filename>
 		</market>
 		<market product="USD/JPY">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/USDJPY.txt</filename>
+			<filename>resources/USDJPY.txt</filename>
 		</market>
 		<market product="USD/TRY">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/backtesttool/resources/GBPUSD.txt</filename>
+			<filename>resources/GBPUSD.txt</filename>
 		</market>
 	</markets>
 </backtestconfig>
