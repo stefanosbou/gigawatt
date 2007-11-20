@@ -75,7 +75,7 @@ public final class Account {
 
 	public void close(final MarketOrder mo) throws OAException {
 		final int transactionNumber = mo.getTransactionNumber();
-		final MarketOrder closeTrade = getTradeWithId(transactionNumber);
+		final MarketOrder closeTrade = internalGetTradeWithId(transactionNumber);
 		if (closeTrade == null) {
 			throw new OAException("Invalid MarketOrder " + transactionNumber);
 		}
@@ -112,6 +112,7 @@ public final class Account {
 			profitInHomeCurrency = profitInQuoteCurrency * convert.getMean();
 		}
 		balance += profitInHomeCurrency;
+		realizedPL += profitInHomeCurrency;
 
 		tradeManager.closeTrade(closeTrade);
 		closedTrades.add(closeTrade);
@@ -250,7 +251,13 @@ public final class Account {
 		for (int i = 0; i < size; i++) {
 			final Position position = positionValues[i];
 			final FXTick tick = (FXTick) tickTable.get(position.getPair());
-			value += position.getUnrealizedPL(tick);
+			final FXPair pair = position.getPair();
+			double profit = position.getUnrealizedPL(tick);
+			if (!pair.getQuote().equals(getHomeCurrency())) {
+				FXTick convert = UtilMath.getConverstionRate(pair.getQuote(), getHomeCurrency(), tickTable);
+				profit = profit * convert.getMean();
+			}
+			value += profit;
 		}
 		return value;
 	}
@@ -264,11 +271,20 @@ public final class Account {
 		return null;
 	}
 
-	public MarketOrder getTradeWithId(final int transactionNumber) throws AccountException {
+	private MarketOrder internalGetTradeWithId(final int transactionNumber) {
 		for (final MarketOrder trade : trades) {
 			if (trade.getTransactionNumber() == transactionNumber) {
-				return (MarketOrder) trade.clone();
+				return trade;
 			}
+		}
+		return null;
+	}
+
+	public MarketOrder getTradeWithId(final int transactionNumber) throws AccountException {
+		// todo: Should this return null or throw AccountException if not found
+		final MarketOrder order = internalGetTradeWithId(transactionNumber);
+		if (order != null) {
+			return (MarketOrder) order.clone();
 		}
 		return null;
 	}
@@ -355,28 +371,36 @@ public final class Account {
 	}
 
 	public String toString() {
-		String result = "Account " + accountName + " (" + accountId + "): ";
+		try {
+			String result = "Account " + accountName + " (" + accountId + "): ";
 
-		result += "Balance [" + balance + "]\t";
-		result += "Trades [" + trades.size() + "]\t";
-		result += "Orders [" + orders.size() + "]\t";
-		result += "R P/L [" + realizedPL + "]";
+			result += "Balance [" + UtilMath.round(balance, 2) + "]\t";
+			result += "Trades [" + trades.size() + "]\t";
+			result += "Orders [" + orders.size() + "]\t";
+			result += "marginCall [" + UtilMath.round(getNetAssetValue(), 2) + " " + getMarginCallRate() + "]\t";
+			result += "R P/L [" + UtilMath.round(realizedPL, 2) + "]";
 
-		return result;
+			return result;
+		} catch (AccountException e) {
+			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+		}
 		//todoproper: Implement toString()
+		return super.toString();
 	}
 
 	void process() {
 		try {
-			if (getNetAssetValue() < getMarginCallRate()) {
-				logger.info("Margin Call on Account: " + accountId);
-				final int size = trades.size();
-				for (int i = 0; i < size; i++) {
-					final MarketOrder trade = trades.get(i);
-					closeTrade(trade);
+			if (engine.getMarketManager().newTicksThisLoop() && trades.size() > 0) {
+				if (getNetAssetValue() < getMarginCallRate()) {
+					logger.info("Margin Call on Account: " + accountId);
+					final int size = trades.size();
+					for (int i = 0; i < size; i++) {
+						final MarketOrder trade = trades.get(i);
+						closeTrade(trade);
+					}
+					trades.clear();
+					positions.clear();
 				}
-				trades.clear();
-				positions.clear();
 			}
 		} catch (AccountException e) {
 			e.printStackTrace();  //todoerror: Improve error handling.
