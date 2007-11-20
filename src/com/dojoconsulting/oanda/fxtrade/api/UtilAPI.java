@@ -1,5 +1,7 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
+import com.dojoconsulting.gigawatt.core.Engine;
+
 import java.util.Vector;
 
 /**
@@ -7,28 +9,30 @@ import java.util.Vector;
  */
 public class UtilAPI {
 
-    public static void setUserAccounts(final User user, final Vector<Account> accounts) {
-        user.setAccounts(accounts);
-    }
+	public static void setUserAccounts(final User user, final Vector<Account> accounts) {
+		user.setAccounts(accounts);
+	}
 
-    public static User createUser(final int userId, final String userName, final String password, final String name, final String address, final String telephone, final String email, final long createDate) {
-        return new User(userId, userName, password, name, address, telephone, email, createDate);
-    }
+	public static User createUser(final int userId, final String userName, final String password, final String name, final String address, final String telephone, final String email, final long createDate) {
+		return new User(userId, userName, password, name, address, telephone, email, createDate);
+	}
 
-    public static Account createAccount(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, final int leverage) {
-        return new Account(accountId, balance, homeCurrency, accountName, createDate, leverage);
-    }
+	public static Account createAccount(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, final int leverage, final Engine engine) {
+		final Account a = new Account(accountId, balance, homeCurrency, accountName, createDate, leverage);
+		a.setEngine(engine);
+		return a;
+	}
 
-    public static void processAccount(final Account account)  {
-        account.process();
-    }
+	public static void processAccount(final Account account) {
+		account.process();
+	}
 
-    public static void setTransactionNumber(int transactionNumber, MarketOrder trade) {
-        trade.setTransactionNumber(transactionNumber);
-    }
+	public static void setTransactionNumber(int transactionNumber, MarketOrder trade) {
+		trade.setTransactionNumber(transactionNumber);
+	}
 
-    public static void closeTrade(MarketOrder closingTrade, MarketOrder closePrice) {
-        closingTrade.setClose(closePrice);
-        //To change body of created methods use File | Settings | File Templates.
-    }
+	public static void closeTrade(MarketOrder closingTrade, MarketOrder closePrice) {
+		closingTrade.setClose(closePrice);
+		//To change body of created methods use File | Settings | File Templates.
+	}
 }
