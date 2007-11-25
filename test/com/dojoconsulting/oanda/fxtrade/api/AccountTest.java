@@ -95,6 +95,10 @@ public class AccountTest extends TestCase {
 			public void nextTick(final long time) {
 
 			}
+
+			public void close() {
+
+			}
 		};
 
 		engine.setMarketManager(mockManager);
@@ -182,6 +186,10 @@ public class AccountTest extends TestCase {
 			}
 
 			public void nextTick(final long time) {
+
+			}
+
+			public void close() {
 
 			}
 		};

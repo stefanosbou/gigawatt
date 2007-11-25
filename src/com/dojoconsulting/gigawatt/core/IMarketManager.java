@@ -21,4 +21,6 @@ public interface IMarketManager {
 	void init(BackTestConfig config);
 
 	void nextTick(long time);
+
+	void close();
 }

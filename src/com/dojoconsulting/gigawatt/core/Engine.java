@@ -109,6 +109,12 @@ public class Engine {
 	}
 
 	private void stopped() {
+		accountManager.close();
+		userManager.close();
+		tradeManager.close();
+		strategyManager.close();
+		marketManager.close();
+
 		log.info("FXOandaBackTest has finished.");
 		final long totalTime = new Date().getTime() - logStartTime;
 		log.info("Test took " + totalTime);

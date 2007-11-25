@@ -9,6 +9,8 @@ import com.dojoconsulting.gigawatt.core.IUserManager;
 import com.dojoconsulting.oanda.fxtrade.api.Account;
 import com.dojoconsulting.oanda.fxtrade.api.User;
 import com.dojoconsulting.oanda.fxtrade.api.UtilAPI;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,8 @@ import java.util.Vector;
  * Time: 00:03:38
  */
 public class FXAccountManager implements IAccountManager {
+	private static Log logger = LogFactory.getLog(FXAccountManager.class);
+
 	private List<Account> accounts;
 
 	private IUserManager userManager;
@@ -43,7 +47,6 @@ public class FXAccountManager implements IAccountManager {
 		}
 	}
 
-
 	public Account getAccountWithId(final int accountId) {
 		for (final Account acc : accounts) {
 			if (acc.getAccountId() == (accountId)) {
@@ -56,7 +59,6 @@ public class FXAccountManager implements IAccountManager {
 	public void preTickProcess() {
 		//nothing to do preprocess
 	}
-
 
 	public void postTickProcess() {
 		for (final Account account : accounts) {
@@ -72,10 +74,10 @@ public class FXAccountManager implements IAccountManager {
 		this.userManager = userManager;
 	}
 
-//	private void processAccounts() {
-//		for (final Account account : accounts) {
-//			tradeManager.processTrades(account);
-//		}
-//	}
+	public void close() {
+		for (final Account account : accounts) {
+			logger.info(account);
+		}
+	}
 
 }
