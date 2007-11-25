@@ -21,92 +21,96 @@ import java.util.Date;
  * User: Amit Chada
  * Date: 27-Oct-2007
  * Time: 20:25:30
- * To change this template use File | Settings | File Templates.
  */
 public abstract class GenericFXMarketDataReader implements IMarketData {
-    protected final FXPair pair;
-    protected BufferedReader in;
-    private FXTick lastTick = new FXTick(0, 0.0, 0.0);
-    private FXTick nextPossibleTick = new FXTick(0, 0.0, 0.0);
+	private final FXPair pair;
+	private final String filePath;
+	private BufferedReader in;
+	private FXTick lastTick = new FXTick(0, 0.0, 0.0);
+	private FXTick nextPossibleTick = new FXTick(0, 0.0, 0.0);
 
-    private DateFormat formatter;
+	private DateFormat formatter;
 
-    private FXMarketManager marketManager;
+	private FXMarketManager marketManager;
 
-    public void setMarketManager(final IMarketManager marketManager) {
-        this.marketManager = (FXMarketManager) marketManager;
-    }
+	public void setMarketManager(final IMarketManager marketManager) {
+		this.marketManager = (FXMarketManager) marketManager;
+	}
 
-    public GenericFXMarketDataReader(final FXPair pair, final String path) {
-        this.pair = pair;
-        try {
-            in = new BufferedReader(new FileReader(path));
-        }
-        catch (FileNotFoundException e) {
-            throw new BackTestToolException("GenericFXMarketDataReader: Could not find the file (" + path + ") for " + pair, e);
-        }
-        formatter = getDateFormatter();
-    }
+	public GenericFXMarketDataReader(final FXPair pair, final String path) {
+		this.pair = pair;
+		this.filePath = path;
+	}
 
-    public boolean hasMoreTicks() {
-        try {
-            return in.ready() || nextPossibleTick != null;
-        }
-        catch (IOException e) {
-            throw new BackTestToolException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
-        }
-    }
+	public void init() {
+		try {
+			in = new BufferedReader(new FileReader(filePath));
+		}
+		catch (FileNotFoundException e) {
+			throw new BackTestToolException("GenericFXMarketDataReader: Could not find the file (" + filePath + ") for " + pair, e);
+		}
+		formatter = getDateFormatter();
+	}
 
-    public ITick getNextTick(final long currentTimeInMillis) {
-        String currentToken = null;
-        try {
-            if (nextPossibleTick != null) {
-                if (nextPossibleTick.getTimestamp() > currentTimeInMillis) {
-                    return null;
-                }
-                lastTick = nextPossibleTick;
-                marketManager.registerTick(pair, lastTick);
-                nextPossibleTick = null;
-            }
-            if (!in.ready()) {
-                return null;
-            }
-            while (in.ready()) {
-                final String dataRecord = in.readLine();
-                if (dataRecord == null) {
-                    return null;
-                }
-                final String[] tokens = processRecord(dataRecord);
-                currentToken = tokens[0];
-                final Date date = formatter.parse(currentToken);
-                final long millis = date.getTime();
-                currentToken = tokens[1];
-                final double bid = Double.parseDouble(currentToken);
-                currentToken = tokens[2];
-                final double ask = Double.parseDouble(currentToken);
-                if (millis > currentTimeInMillis) {
-                    nextPossibleTick = new FXTick(millis, bid, ask);
-                    return lastTick;
-                }
-                lastTick = new FXTick(millis, bid, ask);
-                marketManager.registerTick(pair, lastTick);
-            }
-            return lastTick;
-        }
-        catch (IOException e) {
-            throw new BackTestToolException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
-        }
-        catch (ParseException e) {
-            throw new BackTestToolException("GenericFXMarketDataReader: There was a problem parsing the date in " + pair + " with the following data: '" + currentToken + "'.", e);
-        }
-    }
+	public boolean hasMoreTicks() {
+		try {
+			return in.ready() || nextPossibleTick != null;
+		}
+		catch (IOException e) {
+			throw new BackTestToolException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
+		}
+	}
 
-    public FXPair getProduct() {
-        return pair;
-    }
+	public ITick getNextTick(final long currentTimeInMillis) {
+		String currentToken = null;
+		try {
+			if (nextPossibleTick != null) {
+				if (nextPossibleTick.getTimestamp() > currentTimeInMillis) {
+					return null;
+				}
+				lastTick = nextPossibleTick;
+				marketManager.registerTick(pair, lastTick);
+				nextPossibleTick = null;
+			}
+			if (!in.ready()) {
+				return null;
+			}
+			while (in.ready()) {
+				final String dataRecord = in.readLine();
+				if (dataRecord == null) {
+					return null;
+				}
+				final String[] tokens = processRecord(dataRecord);
+				currentToken = tokens[0];
+				final Date date = formatter.parse(currentToken);
+				final long millis = date.getTime();
+				currentToken = tokens[1];
+				final double bid = Double.parseDouble(currentToken);
+				currentToken = tokens[2];
+				final double ask = Double.parseDouble(currentToken);
+				if (millis > currentTimeInMillis) {
+					nextPossibleTick = new FXTick(millis, bid, ask);
+					return lastTick;
+				}
+				lastTick = new FXTick(millis, bid, ask);
+				marketManager.registerTick(pair, lastTick);
+			}
+			return lastTick;
+		}
+		catch (IOException e) {
+			throw new BackTestToolException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
+		}
+		catch (ParseException e) {
+			throw new BackTestToolException("GenericFXMarketDataReader: There was a problem parsing the date in " + pair + " with the following data: '" + currentToken + "'.", e);
+		}
+	}
 
-    protected abstract String[] processRecord(final String record);
+	public FXPair getProduct() {
+		return pair;
+	}
 
-    protected abstract DateFormat getDateFormatter();
+	protected abstract String[] processRecord(final String record);
+
+	protected abstract DateFormat getDateFormatter();
 
 }

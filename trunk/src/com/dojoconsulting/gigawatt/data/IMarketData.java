@@ -7,14 +7,15 @@ import com.dojoconsulting.gigawatt.core.IMarketManager;
  * User: Amit Chada
  * Date: 15-Oct-2007
  * Time: 07:15:52
- * To change this template use File | Settings | File Templates.
  */
 public interface IMarketData {
-    boolean hasMoreTicks();
+	boolean hasMoreTicks();
 
-    ITick getNextTick(long currentTimeInMillis);
+	ITick getNextTick(long currentTimeInMillis);
 
-    IProduct getProduct();
+	IProduct getProduct();
 
-    void setMarketManager(IMarketManager marketManager);
+	void setMarketManager(IMarketManager marketManager);
+
+	void init();
 }
