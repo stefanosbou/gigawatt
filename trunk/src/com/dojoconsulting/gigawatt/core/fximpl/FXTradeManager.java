@@ -164,6 +164,10 @@ public class FXTradeManager implements ITradeManager {
 		// Todo: Check for Limit Orders expired
 	}
 
+	public void close() {
+		//Nothing to do. 
+	}
+
 	private void executeTakeProfits(String market, boolean isLong, double price) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("FXTradeManager: Executing " + (isLong ? "long" : "short") + " take profits in " + market + " at " + price);

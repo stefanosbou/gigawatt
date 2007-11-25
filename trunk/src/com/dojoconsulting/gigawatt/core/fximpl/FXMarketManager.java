@@ -115,4 +115,8 @@ public class FXMarketManager implements IMarketManager {
 			}
 		}
 	}
+
+	public void close() {
+		// Nothing to do.
+	}
 }
