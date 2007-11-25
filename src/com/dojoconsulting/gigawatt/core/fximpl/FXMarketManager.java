@@ -50,6 +50,7 @@ public class FXMarketManager implements IMarketManager {
 				final IMarketData marketData = (IMarketData) constructor.newInstance(pair, filename);
 
 				marketData.setMarketManager(this);
+				marketData.init();
 				markets.put(pair, marketData);
 			}
 		}
