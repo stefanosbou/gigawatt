@@ -10,9 +10,9 @@
   * Limit Orders.
     * Implement an FXOrderManager (along the same lines of FXTradeManager) to track current open limit orders and to process ticks to ensure execution.
     * Require new tables?
-  * FXHistoryManager
-    * Implement an FXOrderManager that would request a registration of every tick from FXMarketManager and then build up FXHistoryPoints, CandlePoints and MinMaxs for each of the supported.
-    * Link into the Account object so it can request the last 500 (365 for Daily)
+  * ~~FXHistoryManager~~
+    * ~~Implement an FXOrderManager that would request a registration of every tick from FXMarketManager and then build up FXHistoryPoints, CandlePoints and MinMaxs for each of the supported.~~
+    * ~~Link into the RateTable object so it can request the last 500 (365 for Daily)~~
   * Transactions
     * Decide on Database table or Log file to record all transactions.
     * FXTransaction Manager?
@@ -37,9 +37,9 @@
   * Improve test coverage, especially around calculations.
     * This probably should not be post functionality.
   * Parameters being passed into strategies via xml config.
-  * Oanda FXTick data MarketData reader.
+  * ~~Oanda FXTick data MarketData reader.~~
   * Engine hook process.
-    * Add to deinit() to current and future engine processes.
+    * ~~Add to deinit() to current and future engine processes.~~
   * Statistics calculator
 
 == Client side framework ==
