@@ -162,16 +162,16 @@ public final class Account {
 	}
 
 	public void modify(final LimitOrder lo) throws OAException {
-		//todo: Implement modify(LimitOrder)
+		//TODO: Implement modify(LimitOrder)
 	}
 
 	public void execute(final LimitOrder lo) throws OAException {
-		//todo: Implement execute(LimitOrder)
+		//TODO: Implement execute(LimitOrder)
 
 	}
 
 	public void close(final LimitOrder lo) throws OAException {
-		//todo: Implement close(LimitOrder)
+		//TODO: Implement close(LimitOrder)
 
 	}
 
@@ -196,8 +196,8 @@ public final class Account {
 		}
 		position.addMarketOrder(newOrder);
 
-		//todo: Implement execute(MarketOrder) properly (still needs to check for reversal)
-		//todo: Needs to check for sufficient funds.
+		//TODO: Implement execute(MarketOrder) properly (still needs to check for reversal)
+		//TODO: Needs to check for sufficient funds.
 	}
 
 	public int getAccountId() {
@@ -323,7 +323,7 @@ public final class Account {
 	}
 
 	public double getMarginRate() {
-		//todo: Implement getMarginRate()
+		//TODO: Implement getMarginRate()
 		// Possibly the inverse of Leverage?
 		return 1 / leverage;
 	}
@@ -385,7 +385,7 @@ public final class Account {
 		} catch (AccountException e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 		}
-		//todoproper: Implement toString()
+		//TODOproper: Implement toString()
 		return super.toString();
 	}
 
@@ -415,7 +415,7 @@ public final class Account {
 				}
 			}
 		} catch (AccountException e) {
-			e.printStackTrace();  //todoerror: Improve error handling.
+			e.printStackTrace();  //TODOerror: Improve error handling.
 		}
 	}
 

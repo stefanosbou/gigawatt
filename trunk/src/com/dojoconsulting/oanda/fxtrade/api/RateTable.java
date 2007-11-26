@@ -49,7 +49,7 @@ public final class RateTable {
 
 	@SuppressWarnings("unchecked")
 	public List getCandles(final FXPair pair, final long interval, final int numTicks) throws OAException {
-		//todo: Decide whether this should be cached and pushed down to MarketHistory layer
+		//TODO: Decide whether this should be cached and pushed down to MarketHistory layer
 		final List<FXHistoryPoint> history = (List<FXHistoryPoint>) getHistory(pair, interval, numTicks);
 		final List candles = new ArrayList(history.size());
 		for (final FXHistoryPoint aHistory : history) {
@@ -64,7 +64,7 @@ public final class RateTable {
 
 	@SuppressWarnings("unchecked")
 	public List getMinMaxs(final FXPair pair, final long interval, final int numTicks) throws OAException {
-		//todo: Decide whether this should be cached and pushed down to MarketHistory layer
+		//TODO: Decide whether this should be cached and pushed down to MarketHistory layer
 		final List<FXHistoryPoint> history = (List<FXHistoryPoint>) getHistory(pair, interval, numTicks);
 		final List minMaxs = new ArrayList(history.size());
 		for (final FXHistoryPoint aHistory : history) {

@@ -14,7 +14,7 @@ public final class LimitOrder extends EntryOrder implements Cloneable {
 
 	public String toString() {
 		return super.toString();
-		//todoproper: Implement toString()
+		//TODOproper: Implement toString()
 	}
 
 	public Object clone() {

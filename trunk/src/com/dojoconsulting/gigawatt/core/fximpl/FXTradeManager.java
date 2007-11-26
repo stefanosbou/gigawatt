@@ -206,10 +206,10 @@ public class FXTradeManager implements ITradeManager {
 			refreshOrderMonitor(market);
 		}
 		catch (SQLException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		} catch (OAException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		}
 	}
@@ -252,10 +252,10 @@ public class FXTradeManager implements ITradeManager {
 			refreshOrderMonitor(market);
 		}
 		catch (SQLException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		} catch (OAException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		}
 
@@ -287,7 +287,7 @@ public class FXTradeManager implements ITradeManager {
 			}
 		}
 		catch (SQLException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		}
 	}
@@ -306,7 +306,7 @@ public class FXTradeManager implements ITradeManager {
 			refreshPairs.add(trade.getPair());
 		}
 		catch (SQLException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		}
 	}
@@ -325,7 +325,7 @@ public class FXTradeManager implements ITradeManager {
 			}
 		}
 		catch (SQLException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		}
 	}
@@ -427,7 +427,7 @@ public class FXTradeManager implements ITradeManager {
 			}
 		}
 		catch (SQLException e) {
-			e.printStackTrace(); //todoerror: Improve error handling.
+			e.printStackTrace(); //TODOerror: Improve error handling.
 			System.exit(1);
 		}
 	}
