@@ -5,13 +5,16 @@
 
 	<bean id="engine" class="com.dojoconsulting.gigawatt.core.Engine" scope="singleton">
 		<property name="marketManager" ref="marketManager"/>
+		<property name="historyManager" ref="historyManager"/>
 		<property name="tradeManager" ref="tradeManager"/>
 		<property name="accountManager" ref="accountManager"/>
 		<property name="userManager" ref="userManager"/>
 		<property name="strategyManager" ref="strategyManager"/>
 	</bean>
 
-	<bean id="marketManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXMarketManager"/>
+	<bean id="marketManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXMarketManager">
+		<property name="historyManager" ref="historyManager"/>
+	</bean>
 	<bean id="tradeManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXTradeManager">
 		<property name="marketManager" ref="marketManager"/>
 		<property name="accountManager" ref="accountManager"/>
@@ -22,5 +25,6 @@
 	</bean>
 	<bean id="userManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXUserManager"/>
 	<bean id="strategyManager" class="com.dojoconsulting.gigawatt.core.generic.GenericStrategyManager"/>
+	<bean id="historyManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXHistoryManager"/>
 
 </beans>

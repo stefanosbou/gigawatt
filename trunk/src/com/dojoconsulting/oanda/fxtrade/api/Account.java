@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +40,10 @@ public final class Account {
 	private FXTradeManager tradeManager;
 
 	private FXEventManager eventManager = new FXEventManager() {
+		@SuppressWarnings("unchecked")
 		final void event(final FXAccountEventInfo ei) {
-			for (final FXEvent event : getEvents()) {
+			final List<FXEvent> events = (List<FXEvent>) getEvents();
+			for (final FXEvent event : events) {
 				if (event instanceof FXAccountEvent) {
 					final FXAccountEvent accountEvent = (FXAccountEvent) event;
 					if (accountEvent.match(ei)) {
@@ -56,7 +59,7 @@ public final class Account {
 		tradeManager = (FXTradeManager) engine.getTradeManager();
 	}
 
-	Account(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, int leverage) {
+	Account(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, final int leverage) {
 		this.createDate = createDate;
 		this.accountId = accountId;
 		this.balance = balance;
@@ -91,7 +94,7 @@ public final class Account {
 	}
 
 	private void closeTrade(final MarketOrder closeTrade) {
-		Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = engine.getMarketManager().getTickTable();
 		final FXTick tick = (FXTick) tickTable.get(closeTrade.getPair());
 		final MarketOrder close = new MarketOrder();
 		if (closeTrade.isLong()) {
@@ -104,11 +107,11 @@ public final class Account {
 		// balance adjustment
 		final double profitInQuoteCurrency = closeTrade.getRealizedPL();
 		final FXPair pair = closeTrade.getPair();
-		double profitInHomeCurrency;
+		final double profitInHomeCurrency;
 		if (pair.getQuote().equals(getHomeCurrency())) {
 			profitInHomeCurrency = profitInQuoteCurrency;
 		} else {
-			FXTick convert = UtilMath.getConverstionRate(pair.getQuote(), getHomeCurrency(), tickTable);
+			final FXTick convert = UtilMath.getConverstionRate(pair.getQuote(), getHomeCurrency(), tickTable);
 			profitInHomeCurrency = profitInQuoteCurrency * convert.getMean();
 		}
 		balance += profitInHomeCurrency;
@@ -126,7 +129,7 @@ public final class Account {
 		if (thePosition == null) {
 			throw new OAException("Invalid position pair " + position);
 		}
-		List<MarketOrder> positionTrades = thePosition.getTrades();
+		final List<MarketOrder> positionTrades = thePosition.getTrades();
 		final int size = positionTrades.size();
 		for (int i = 0; i < size; i++) {
 			final MarketOrder closeTrade = positionTrades.get(i);
@@ -246,15 +249,13 @@ public final class Account {
 		final Map tickTable = engine.getMarketManager().getTickTable();
 		int value = 0;
 
-		Position[] positionValues = positions.values().toArray(new Position[positions.size()]);
-		final int size = positionValues.length;
-		for (int i = 0; i < size; i++) {
-			final Position position = positionValues[i];
+		final Collection<Position> positionValues = positions.values();
+		for (final Position position : positionValues) {
 			final FXTick tick = (FXTick) tickTable.get(position.getPair());
 			final FXPair pair = position.getPair();
 			double profit = position.getUnrealizedPL(tick);
 			if (!pair.getQuote().equals(getHomeCurrency())) {
-				FXTick convert = UtilMath.getConverstionRate(pair.getQuote(), getHomeCurrency(), tickTable);
+				final FXTick convert = UtilMath.getConverstionRate(pair.getQuote(), getHomeCurrency(), tickTable);
 				profit = profit * convert.getMean();
 			}
 			value += profit;
@@ -314,7 +315,7 @@ public final class Account {
 	}
 
 	public double getMarginCallRate() throws AccountException {
-		double marginUsed = getMarginUsed();
+		final double marginUsed = getMarginUsed();
 		if (marginUsed == 0) {
 			return 0;
 		}

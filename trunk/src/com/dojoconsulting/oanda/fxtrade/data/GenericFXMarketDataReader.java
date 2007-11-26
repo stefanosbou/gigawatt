@@ -1,6 +1,6 @@
 package com.dojoconsulting.oanda.fxtrade.data;
 
-import com.dojoconsulting.gigawatt.core.BackTestToolException;
+import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.core.IMarketManager;
 import com.dojoconsulting.gigawatt.core.fximpl.FXMarketManager;
 import com.dojoconsulting.gigawatt.data.IMarketData;
@@ -47,7 +47,7 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 			in = new BufferedReader(new FileReader(filePath));
 		}
 		catch (FileNotFoundException e) {
-			throw new BackTestToolException("GenericFXMarketDataReader: Could not find the file (" + filePath + ") for " + pair, e);
+			throw new GigawattException("GenericFXMarketDataReader: Could not find the file (" + filePath + ") for " + pair, e);
 		}
 		formatter = getDateFormatter();
 	}
@@ -57,7 +57,7 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 			return in.ready() || nextPossibleTick != null;
 		}
 		catch (IOException e) {
-			throw new BackTestToolException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
+			throw new GigawattException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
 		}
 	}
 
@@ -98,10 +98,10 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 			return lastTick;
 		}
 		catch (IOException e) {
-			throw new BackTestToolException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
+			throw new GigawattException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
 		}
 		catch (ParseException e) {
-			throw new BackTestToolException("GenericFXMarketDataReader: There was a problem parsing the date in " + pair + " with the following data: '" + currentToken + "'.", e);
+			throw new GigawattException("GenericFXMarketDataReader: There was a problem parsing the date in " + pair + " with the following data: '" + currentToken + "'.", e);
 		}
 	}
 

@@ -1,7 +1,7 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
-import com.dojoconsulting.gigawatt.core.BackTestToolException;
 import com.dojoconsulting.gigawatt.core.Engine;
+import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.core.NotImplementedException;
 import com.dojoconsulting.gigawatt.core.TimeServer;
 import org.springframework.beans.factory.access.BeanFactoryLocator;
@@ -53,6 +53,8 @@ public abstract class FXClient extends Observable {
 		lazyLoad();
 		final Map tickTable = engine.getMarketManager().getTickTable();
 		rateTable.setTickTable(tickTable);
+		//todo: Improve this.
+		rateTable.setHistoryManager(engine.getHistoryManager());
 		return rateTable;
 	}
 
@@ -94,7 +96,7 @@ public abstract class FXClient extends Observable {
 				throw new InvalidPasswordException("Invalid password for " + userName);
 			}
 		}
-		catch (BackTestToolException e) {
+		catch (GigawattException e) {
 			throw (InvalidUserException) e.getSpecificAPIException();
 		}
 	}
