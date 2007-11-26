@@ -3,7 +3,9 @@ package com.dojoconsulting.oanda.fxtrade.data;
 import com.dojoconsulting.oanda.fxtrade.api.FXPair;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * User: Amit Chada
@@ -13,17 +15,19 @@ import java.text.SimpleDateFormat;
  */
 public class OandaASCIITickMarketData extends GenericFXMarketDataReader {
 
+	final DateFormat formatter = new SimpleDateFormat("dd/MM/yy hh:mm:ss");
+
 	public OandaASCIITickMarketData(final FXPair pair, final String path) {
 		super(pair, path);
 	}
 
-	protected String[] processRecord(final String record) {
+	protected void processRecord(final String record, final TickRecord tickRecord) throws ParseException {
 		final String[] tokens = record.split(" ");
-		return new String[]{tokens[0] + " " + tokens[1], tokens[2], tokens[3]};
+		final Date date = formatter.parse(tokens[0] + " " + tokens[1]);
+		tickRecord.setTimeInMillis(date.getTime());
+		tickRecord.setBid(Double.parseDouble(tokens[2]));
+		tickRecord.setAsk(Double.parseDouble(tokens[3]));
 	}
 
-	protected DateFormat getDateFormatter() {
-		return new SimpleDateFormat("dd/MM/yy hh:mm:ss");
-	}
 
 }

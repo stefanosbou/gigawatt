@@ -3,29 +3,30 @@ package com.dojoconsulting.oanda.fxtrade.data;
 import com.dojoconsulting.oanda.fxtrade.api.FXPair;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * User: Amit Chada
  * Date: 15-Oct-2007
  * Time: 07:55:52
  * EODMarketData expects a file that has data in the format of dd.mm.yyyy,price
- * <p/>
- * To change the date format, extend this class and call setFormatter from the constructor.  Ensure you call super(FXPair pair, String path)
  */
 public class EODMarketData extends GenericFXMarketDataReader {
 
-    public EODMarketData(final FXPair pair, final String path) {
-        super(pair, path);
-    }
+	final DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 
-    protected String[] processRecord(final String record) {
-        final String[] tokens = record.split(",");
-        return new String[]{tokens[0], tokens[1], tokens[1]};
-    }
+	public EODMarketData(final FXPair pair, final String path) {
+		super(pair, path);
+	}
 
-    protected DateFormat getDateFormatter() {
-        return new SimpleDateFormat("dd.MM.yyyy");
-    }
-
+	protected void processRecord(final String record, final TickRecord tickRecord) throws ParseException {
+		final String[] tokens = record.split(",");
+		final Date date = formatter.parse(tokens[0]);
+		tickRecord.setTimeInMillis(date.getTime());
+		final double price = Double.parseDouble(tokens[1]);
+		tickRecord.setBid(price);
+		tickRecord.setAsk(price);
+	}
 }

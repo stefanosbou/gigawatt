@@ -14,7 +14,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.
@@ -49,7 +48,6 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 		catch (FileNotFoundException e) {
 			throw new GigawattException("GenericFXMarketDataReader: Could not find the file (" + filePath + ") for " + pair, e);
 		}
-		formatter = getDateFormatter();
 	}
 
 	public boolean hasMoreTicks() {
@@ -62,7 +60,8 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 	}
 
 	public ITick getNextTick(final long currentTimeInMillis) {
-		String currentToken = null;
+		final TickRecord tickRecord = new TickRecord();
+		String dataRecord = null;
 		try {
 			if (nextPossibleTick != null) {
 				if (nextPossibleTick.getTimestamp() > currentTimeInMillis) {
@@ -76,18 +75,14 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 				return null;
 			}
 			while (in.ready()) {
-				final String dataRecord = in.readLine();
+				dataRecord = in.readLine();
 				if (dataRecord == null) {
 					return null;
 				}
-				final String[] tokens = processRecord(dataRecord);
-				currentToken = tokens[0];
-				final Date date = formatter.parse(currentToken);
-				final long millis = date.getTime();
-				currentToken = tokens[1];
-				final double bid = Double.parseDouble(currentToken);
-				currentToken = tokens[2];
-				final double ask = Double.parseDouble(currentToken);
+				processRecord(dataRecord, tickRecord);
+				final long millis = tickRecord.timeInMillis;
+				final double bid = tickRecord.bid;
+				final double ask = tickRecord.ask;
 				if (millis > currentTimeInMillis) {
 					nextPossibleTick = new FXTick(millis, bid, ask);
 					return lastTick;
@@ -101,7 +96,7 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 			throw new GigawattException("GenericFXMarketDataReader: There was a problem reading market data for " + pair, e);
 		}
 		catch (ParseException e) {
-			throw new GigawattException("GenericFXMarketDataReader: There was a problem parsing the date in " + pair + " with the following data: '" + currentToken + "'.", e);
+			throw new GigawattException("GenericFXMarketDataReader: There was a problem parsing the date in " + pair + " with the following data: '" + dataRecord + "'.", e);
 		}
 	}
 
@@ -109,8 +104,23 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 		return pair;
 	}
 
-	protected abstract String[] processRecord(final String record);
+	protected abstract void processRecord(final String record, final TickRecord tickRecord) throws ParseException;
 
-	protected abstract DateFormat getDateFormatter();
+	protected class TickRecord {
+		private long timeInMillis;
+		private double bid;
+		private double ask;
 
+		public void setTimeInMillis(final long timeInMillis) {
+			this.timeInMillis = timeInMillis;
+		}
+
+		public void setBid(final double bid) {
+			this.bid = bid;
+		}
+
+		public void setAsk(final double ask) {
+			this.ask = ask;
+		}
+	}
 }
