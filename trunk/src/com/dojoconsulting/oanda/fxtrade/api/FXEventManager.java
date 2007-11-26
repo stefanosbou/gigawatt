@@ -1,29 +1,28 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The FXEventManager class keeps track of a set of FXEvents of a particular type, handling their registration,
  * notification, and deregistration.
  */
 public abstract class FXEventManager {
-    private Vector<FXEvent> events;
+	private List<FXEvent> events;
 
-    FXEventManager() {
-        events = new Vector<FXEvent>();
-    }
+	FXEventManager() {
+		events = new ArrayList<FXEvent>();
+	}
 
-    public boolean add(final FXEvent e) {
-        return events.add(e);
-    }
+	public boolean add(final FXEvent e) {
+		return events.add(e);
+	}
 
-    public boolean remove(final FXEvent e) {
-        return events.remove(e);
-    }
+	public boolean remove(final FXEvent e) {
+		return events.remove(e);
+	}
 
-    public Vector<FXEvent> getEvents() {
-        return events;
-    }
-
-
+	public List getEvents() {
+		return events;
+	}
 }
