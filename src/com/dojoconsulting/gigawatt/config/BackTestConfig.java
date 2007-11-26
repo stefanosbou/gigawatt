@@ -1,6 +1,6 @@
 package com.dojoconsulting.gigawatt.config;
 
-import com.dojoconsulting.gigawatt.core.BackTestToolException;
+import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.DateConverter;
 
@@ -18,90 +18,91 @@ import java.util.List;
  * Time: 03:04:19
  */
 public class BackTestConfig {
-    private Date startdate;
-    private String engine;
-    private int increment;
-    private List<UserConfig> users;
-    private List<String> strategies;
-    private List<MarketConfig> markets;
-    public static final String CONFIG_PROPERTY = "com.dojoconsulting.gigawatt.config";
+	private Date startdate;
+	private String engine;
+	private int increment;
+	private List<UserConfig> users;
+	private List<String> strategies;
+	private List<MarketConfig> markets;
+	public static final String CONFIG_PROPERTY = "com.dojoconsulting.gigawatt.config";
 
-    public static BackTestConfig load() {
-        final String xmlFile = System.getProperty(CONFIG_PROPERTY);
-        try {
+	public static BackTestConfig load() {
+		final String xmlFile = System.getProperty(CONFIG_PROPERTY);
+		try {
 
-            final StringBuffer xml = new StringBuffer();
-            final BufferedReader in = new BufferedReader(new FileReader(xmlFile));
-            while (in.ready()) {
-                xml.append(in.readLine());
-            }
+			final StringBuffer xml = new StringBuffer();
+			final BufferedReader in = new BufferedReader(new FileReader(xmlFile));
+			while (in.ready()) {
+				xml.append(in.readLine());
+			}
 
-            final XStream xstream = new XStream();
-            xstream.alias("backtestconfig", BackTestConfig.class);
-            xstream.alias("account", AccountConfig.class);
-            xstream.alias("market", MarketConfig.class);
-            xstream.alias("user", UserConfig.class);
-            xstream.alias("strategy", String.class);
-            xstream.useAttributeFor("engine", String.class);
-            xstream.useAttributeFor("id", Integer.class);
-            xstream.useAttributeFor("product", String.class);
+			final XStream xstream = new XStream();
+			xstream.alias("backtestconfig", BackTestConfig.class);
+			xstream.alias("account", AccountConfig.class);
+			xstream.alias("market", MarketConfig.class);
+			xstream.alias("user", UserConfig.class);
+			xstream.alias("strategy", String.class);
+			xstream.useAttributeFor("engine", String.class);
+			xstream.useAttributeFor("id", Integer.class);
+			xstream.useAttributeFor("product", String.class);
+			xstream.useAttributeFor("keepHistory", Boolean.class);
 
-            xstream.registerConverter(new DateConverter("yyyy-MM-dd hh:mm:ss", new String[]{"yyyy-MM-dd hh:mm:ss", "yyyy-MM-dd"}));
-            return (BackTestConfig) xstream.fromXML(xml.toString());
-        }
-        catch (FileNotFoundException e) {
-            throw new BackTestToolException("BackTestConfig: There was a problem finding " + xmlFile + ".  Please verify filename is correct.", e);
-        }
-        catch (IOException e) {
-            throw new BackTestToolException("BackTestConfig: There was a problem reading " + xmlFile + ".  Please verify filename is correct and not locked by another process.", e);
-        }
-    }
+			xstream.registerConverter(new DateConverter("yyyy-MM-dd hh:mm:ss", new String[]{"yyyy-MM-dd hh:mm:ss", "yyyy-MM-dd"}));
+			return (BackTestConfig) xstream.fromXML(xml.toString());
+		}
+		catch (FileNotFoundException e) {
+			throw new GigawattException("BackTestConfig: There was a problem finding " + xmlFile + ".  Please verify filename is correct.", e);
+		}
+		catch (IOException e) {
+			throw new GigawattException("BackTestConfig: There was a problem reading " + xmlFile + ".  Please verify filename is correct and not locked by another process.", e);
+		}
+	}
 
-    public Date getStartdate() {
-        return startdate;
-    }
+	public Date getStartdate() {
+		return startdate;
+	}
 
-    public void setStartdate(final Date startdate) {
-        this.startdate = startdate;
-    }
+	public void setStartdate(final Date startdate) {
+		this.startdate = startdate;
+	}
 
-    public int getIncrement() {
-        return increment;
-    }
+	public int getIncrement() {
+		return increment;
+	}
 
-    public void setIncrement(final int increment) {
-        this.increment = increment;
-    }
+	public void setIncrement(final int increment) {
+		this.increment = increment;
+	}
 
-    public List<UserConfig> getUsers() {
-        return users;
-    }
+	public List<UserConfig> getUsers() {
+		return users;
+	}
 
-    public void setUsers(final List<UserConfig> users) {
-        this.users = users;
-    }
+	public void setUsers(final List<UserConfig> users) {
+		this.users = users;
+	}
 
-    public List<String> getStrategies() {
-        return strategies;
-    }
+	public List<String> getStrategies() {
+		return strategies;
+	}
 
-    public void setStrategies(final List<String> strategies) {
-        this.strategies = strategies;
-    }
+	public void setStrategies(final List<String> strategies) {
+		this.strategies = strategies;
+	}
 
-    public List<MarketConfig> getMarkets() {
-        return markets;
-    }
+	public List<MarketConfig> getMarkets() {
+		return markets;
+	}
 
-    public void setMarkets(final List<MarketConfig> markets) {
-        this.markets = markets;
-    }
+	public void setMarkets(final List<MarketConfig> markets) {
+		this.markets = markets;
+	}
 
-    public String getEngine() {
-        return engine;
-    }
+	public String getEngine() {
+		return engine;
+	}
 
-    public void setEngine(final String engine) {
-        this.engine = engine;
-    }
+	public void setEngine(final String engine) {
+		this.engine = engine;
+	}
 }

@@ -19,6 +19,7 @@ public class Engine {
 	private ITradeManager tradeManager;
 	private IUserManager userManager;
 	private IStrategyManager strategyManager;
+	private IHistoryManager historyManager;
 
 	private Log log = LogFactory.getLog(Engine.class);
 
@@ -45,9 +46,6 @@ public class Engine {
 		this.accountManager = accountManager;
 	}
 
-	public Engine() {
-	}
-
 	public void init() {
 		final BackTestConfig config = BackTestConfig.load();
 
@@ -62,6 +60,7 @@ public class Engine {
 
 		tradeManager.init(config);
 		marketManager.init(config);
+		historyManager.init(config);
 
 		// Strategy must go last
 		strategyManager.init(config);
@@ -140,12 +139,20 @@ public class Engine {
 		return strategyManager;
 	}
 
+	public void setHistoryManager(final IHistoryManager historyManager) {
+		this.historyManager = historyManager;
+	}
+
+	public IHistoryManager getHistoryManager() {
+		return historyManager;
+	}
+
 	private class Worker extends Thread {
 		public void run() {
 			try {
 				loop();
 			}
-			catch (BackTestToolException e) {
+			catch (GigawattException e) {
 				log.error("An error has occured that has ceased the running of Gigawatt.", e);
 				if (e.getSpecificAPIException() != null) {
 					log.error("The underlying exception was:", e.getSpecificAPIException());

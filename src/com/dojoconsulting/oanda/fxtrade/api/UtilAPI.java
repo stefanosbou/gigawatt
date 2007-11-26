@@ -27,12 +27,24 @@ public class UtilAPI {
 		account.process();
 	}
 
-	public static void setTransactionNumber(int transactionNumber, MarketOrder trade) {
+	public static void setTransactionNumber(final int transactionNumber, final MarketOrder trade) {
 		trade.setTransactionNumber(transactionNumber);
 	}
 
-	public static void closeTrade(MarketOrder closingTrade, MarketOrder closePrice) {
+	public static void closeTrade(final MarketOrder closingTrade, final MarketOrder closePrice) {
 		closingTrade.setClose(closePrice);
-		//To change body of created methods use File | Settings | File Templates.
+	}
+
+	public static FXHistoryPoint createNewHistoryPointFromOld(final FXHistoryPoint oldPoint, final long interval) {
+		return oldPoint.createNextPoint(interval);
+	}
+
+	public static void updateFXHistoryPoint(final FXHistoryPoint currentPoint, final FXTick tick) {
+		currentPoint.updatePoint(tick);
+	}
+
+	public static FXHistoryPoint createStartingFXHistoryPoint(final long start, final FXTick tick) {
+		return new FXHistoryPoint(start, tick);
+
 	}
 }

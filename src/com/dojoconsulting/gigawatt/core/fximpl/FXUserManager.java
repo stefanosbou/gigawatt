@@ -2,7 +2,7 @@ package com.dojoconsulting.gigawatt.core.fximpl;
 
 import com.dojoconsulting.gigawatt.config.BackTestConfig;
 import com.dojoconsulting.gigawatt.config.UserConfig;
-import com.dojoconsulting.gigawatt.core.BackTestToolException;
+import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.core.IUser;
 import com.dojoconsulting.gigawatt.core.IUserManager;
 import com.dojoconsulting.oanda.fxtrade.api.InvalidUserException;
@@ -18,7 +18,6 @@ import java.util.Map;
  * User: Amit Chada
  * Date: 22-Oct-2007
  * Time: 23:47:18
- * To change this template use File | Settings | File Templates.
  */
 public class FXUserManager implements IUserManager {
 	private Map<String, User> users;
@@ -31,7 +30,7 @@ public class FXUserManager implements IUserManager {
 	public boolean verifyLogin(final String userName, final String password) {
 		if (!users.containsKey(userName)) {
 			final InvalidUserException invalidUserName = new InvalidUserException(userName + " is an invalid username.");
-			throw new BackTestToolException("InvalidUserException for " + userName, invalidUserName);
+			throw new GigawattException("InvalidUserException for " + userName, invalidUserName);
 		}
 		final User user = users.get(userName);
 		return user.getPassword().equals(password);

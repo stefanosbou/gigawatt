@@ -280,6 +280,7 @@
     <library name="collections">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/google-collect-snapshot-20071022.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/commons-collections-3.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

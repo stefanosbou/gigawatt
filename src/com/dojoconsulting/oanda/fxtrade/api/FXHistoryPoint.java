@@ -5,100 +5,118 @@ package com.dojoconsulting.oanda.fxtrade.api;
  * ask prices.
  */
 public class FXHistoryPoint implements Cloneable {
-    private long timestamp;
+	private long timestamp;
 
-    private CandlePoint candlePoint;
-    private FXTick open;
-    private FXTick min;
-    private FXTick max;
-    private FXTick close;
-    private boolean corrected;
-    private String stringRepresentation;
-    private MinMaxPoint minMaxPoint;
+	private FXTick open;
+	private FXTick min;
+	private FXTick max;
+	private FXTick close;
+	private boolean corrected;
 
-    public FXHistoryPoint() {
-        this.timestamp = 0;
-        this.candlePoint = new CandlePoint(0, 0, 0, 0, 0);
-        this.open = new FXTick(0, 0, 0);
-        this.min = new FXTick(0, 0, 0);
-        this.max = new FXTick(0, 0, 0);
-        this.close = new FXTick(0, 0, 0);
-        this.open = new FXTick(0, 0, 0);
+	FXHistoryPoint(final long start, final FXTick tick) {
+		this.timestamp = start;
+		this.open = tick;
+		this.min = tick;
+		this.max = tick;
+		this.close = tick;
+	}
 
-        this.minMaxPoint = new MinMaxPoint(0, 0, 0);
+	FXHistoryPoint createNextPoint(final long interval) {
+		final FXHistoryPoint newPoint = new FXHistoryPoint();
+		newPoint.open = this.close;
+		newPoint.min = this.close;
+		newPoint.max = this.close;
+		newPoint.close = this.close;
+		newPoint.timestamp = this.timestamp + interval;
+		return newPoint;
+	}
 
-        this.corrected = false;
-        this.stringRepresentation = "0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0";
-    }
+	void updatePoint(final FXTick newTick) {
+		if (min.getMean() > newTick.getMean()) {
+			min = newTick;
+		} else if (max.getMean() < newTick.getMean()) {
+			max = newTick;
+		}
+		close = newTick;
+	}
 
-    public FXHistoryPoint(final long timestamp, final double openBid, final double openAsk, final double closeBid, final double closeAsk, final double minBid, final double maxBid, final double minAsk, final double maxAsk) {
-        this.timestamp = timestamp;
 
-        this.open = new FXTick(timestamp, openBid, openAsk);
-        this.min = new FXTick(timestamp, minBid, minAsk);
-        this.max = new FXTick(timestamp, maxBid, maxAsk);
-        this.close = new FXTick(timestamp, closeBid, closeAsk);
-        this.candlePoint = new CandlePoint(timestamp, open.getMean(), close.getMean(), min.getMean(), max.getMean());
+	public FXHistoryPoint() {
+		this.timestamp = 0;
+		this.open = new FXTick(0, 0, 0);
+		this.min = new FXTick(0, 0, 0);
+		this.max = new FXTick(0, 0, 0);
+		this.close = new FXTick(0, 0, 0);
 
-        this.minMaxPoint = new MinMaxPoint(timestamp, min.getMean(), max.getMean());
+		this.corrected = false;
+	}
 
-        this.corrected = false;
+	public FXHistoryPoint(final long timestamp, final double openBid, final double openAsk, final double closeBid, final double closeAsk, final double minBid, final double maxBid, final double minAsk, final double maxAsk) {
+		this.timestamp = timestamp;
 
-        final StringBuffer buffer = new StringBuffer();
-        buffer.append(timestamp).append(" ");
-        buffer.append(maxBid).append(" ");
-        buffer.append(maxAsk).append(" ");
-        buffer.append(openBid).append(" ");
-        buffer.append(openAsk).append(" ");
-        buffer.append(closeBid).append(" ");
-        buffer.append(closeAsk).append(" ");
-        buffer.append(minBid).append(" ");
-        buffer.append(minAsk);
+		this.open = new FXTick(timestamp, openBid, openAsk);
+		this.min = new FXTick(timestamp, minBid, minAsk);
+		this.max = new FXTick(timestamp, maxBid, maxAsk);
+		this.close = new FXTick(timestamp, closeBid, closeAsk);
 
-        this.stringRepresentation = buffer.toString();
-    }
+		this.corrected = false;
+	}
 
-    public CandlePoint getCandlePoint() {
-        return candlePoint;
-    }
+	public CandlePoint getCandlePoint() {
+		return new CandlePoint(timestamp, open.getMean(), close.getMean(), min.getMean(), max.getMean());
+	}
 
-    public FXTick getOpen() {
-        return open;
-    }
+	public FXTick getOpen() {
+		return open;
+	}
 
-    public FXTick getMin() {
-        return min;
-    }
+	public FXTick getMin() {
+		return min;
+	}
 
-    public FXTick getMax() {
-        return max;
-    }
+	public FXTick getMax() {
+		return max;
+	}
 
-    public FXTick getClose() {
-        return close;
-    }
+	public FXTick getClose() {
+		return close;
+	}
 
-    public long getTimestamp() {
-        return timestamp;
-    }
+	public long getTimestamp() {
+		return timestamp;
+	}
 
-    public boolean getCorrected() {
-        return corrected;
-    }
+	public boolean getCorrected() {
+		return corrected;
+	}
 
-    public void setCorrected(final boolean corrected) {
-        this.corrected = corrected;
-    }
+	public void setCorrected(final boolean corrected) {
+		this.corrected = corrected;
+	}
 
-    public String toString() {
-        return stringRepresentation;
-    }
+	public String toString() {
+		return getTimestamp() + " " +
+				max.getBid() + " " +
+				max.getAsk() + " " +
+				open.getBid() + " " +
+				open.getAsk() + " " +
+				close.getBid() + " " +
+				close.getAsk() + " " +
+				min.getBid() + " " +
+				min.getAsk();
+	}
 
-    public MinMaxPoint getMinMaxPoint() {
-        return minMaxPoint;
-    }
+	public MinMaxPoint getMinMaxPoint() {
+		return new MinMaxPoint(timestamp, min.getMean(), max.getMean());
+	}
 
-    public Object clone() throws CloneNotSupportedException {
-        return new FXHistoryPoint(timestamp, open.getBid(), open.getAsk(), close.getBid(), close.getAsk(), min.getBid(), min.getAsk(), max.getBid(), max.getAsk());
-    }
+	public Object clone() {
+		final FXHistoryPoint clone = new FXHistoryPoint();
+		clone.timestamp = this.timestamp;
+		clone.open = (FXTick) this.open.clone();
+		clone.close = (FXTick) this.close.clone();
+		clone.min = (FXTick) this.min.clone();
+		clone.max = (FXTick) this.max.clone();
+		return clone;
+	}
 }

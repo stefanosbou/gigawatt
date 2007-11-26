@@ -2,7 +2,8 @@ package com.dojoconsulting.gigawatt.core.fximpl;
 
 import com.dojoconsulting.gigawatt.config.BackTestConfig;
 import com.dojoconsulting.gigawatt.config.MarketConfig;
-import com.dojoconsulting.gigawatt.core.BackTestToolException;
+import com.dojoconsulting.gigawatt.core.GigawattException;
+import com.dojoconsulting.gigawatt.core.IHistoryManager;
 import com.dojoconsulting.gigawatt.core.IMarketManager;
 import com.dojoconsulting.gigawatt.data.IMarketData;
 import com.dojoconsulting.oanda.fxtrade.api.FXPair;
@@ -29,6 +30,7 @@ public class FXMarketManager implements IMarketManager {
 	private final Map<FXPair, FXTick> tickTable;
 	private final Multimap<FXPair, FXTick> perLoopTickTable;
 	private boolean newTicksThisLoop;
+	private IHistoryManager historyManager;
 
 	public FXMarketManager() {
 		markets = new HashMap<FXPair, IMarketData>();
@@ -55,19 +57,19 @@ public class FXMarketManager implements IMarketManager {
 			}
 		}
 		catch (ClassNotFoundException e) {
-			throw new BackTestToolException("FXMarketManager: There was a problem finding " + className + ".  Please ensure you have placed it on the classpath.", e);
+			throw new GigawattException("FXMarketManager: There was a problem finding " + className + ".  Please ensure you have placed it on the classpath.", e);
 		}
 		catch (InvocationTargetException e) {
-			throw new BackTestToolException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
+			throw new GigawattException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
 		}
 		catch (InstantiationException e) {
-			throw new BackTestToolException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
+			throw new GigawattException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
 		}
 		catch (IllegalAccessException e) {
-			throw new BackTestToolException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
+			throw new GigawattException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
 		}
 		catch (NoSuchMethodException e) {
-			throw new BackTestToolException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
+			throw new GigawattException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
 		}
 
 		final Collection<IMarketData> marketValues = markets.values();
@@ -100,8 +102,9 @@ public class FXMarketManager implements IMarketManager {
 	}
 
 	public void registerTick(final FXPair pair, final FXTick tick) {
-		perLoopTickTable.put(pair, tick);
 		newTicksThisLoop = true;
+		perLoopTickTable.put(pair, tick);
+		historyManager.registerTick(pair, tick);
 	}
 
 	public void nextTick(final long currentTimeInMillis) {
@@ -118,5 +121,9 @@ public class FXMarketManager implements IMarketManager {
 
 	public void close() {
 		// Nothing to do.
+	}
+
+	public void setHistoryManager(final IHistoryManager historyManager) {
+		this.historyManager = historyManager;
 	}
 }
