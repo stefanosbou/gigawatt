@@ -24,7 +24,7 @@ import java.util.Date;
  * Time: 07:59:14
  */
 public class BuyAndHoldStrategy implements IStrategy {
-	private static Log logger = LogFactory.getLog(FXNightTraderStrategy.class);
+	private static Log logger = LogFactory.getLog(BuyAndHoldStrategy.class);
 
 	private FXTest client;
 	private FXPair pair;
