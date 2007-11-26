@@ -53,7 +53,7 @@ public abstract class FXClient extends Observable {
 		lazyLoad();
 		final Map tickTable = engine.getMarketManager().getTickTable();
 		rateTable.setTickTable(tickTable);
-		//todo: Improve this.
+		//TODO: Improve this.
 		rateTable.setHistoryManager(engine.getHistoryManager());
 		return rateTable;
 	}

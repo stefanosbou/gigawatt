@@ -73,6 +73,6 @@ public final class FXTick implements Cloneable, ITick {
 		final Date date = new Date(timestamp);
 		final String strDate = DateFormat.getDateInstance().format(date);
 		return strDate + ": " + timestamp + " " + bid + " " + ask;
-		//todoproper: Implement toString()
+		//TODOproper: Implement toString()
 	}
 }

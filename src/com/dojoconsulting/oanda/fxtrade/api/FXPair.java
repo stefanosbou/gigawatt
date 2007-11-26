@@ -36,7 +36,7 @@ public class FXPair implements Cloneable, IProduct {
 		this.base = base;
 		this.quote = quote;
 		this.pair = base + "/" + quote;
-		//todo:  Throw exception if it is an invalid FXPair
+		//TODO:  Throw exception if it is an invalid FXPair
 	}
 
 	public FXPair(final String pair) {
@@ -45,7 +45,7 @@ public class FXPair implements Cloneable, IProduct {
 
 	public String toString() {
 		return pair;
-		//todoproper: Implement toString() - is this correct implementation?
+		//TODOproper: Implement toString() - is this correct implementation?
 	}
 
 	public int compareTo(final FXPair fxpair) {

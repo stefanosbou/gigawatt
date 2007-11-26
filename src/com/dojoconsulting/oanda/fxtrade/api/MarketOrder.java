@@ -1,5 +1,6 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
+import com.dojoconsulting.gigawatt.core.Engine;
 import com.dojoconsulting.gigawatt.core.GigawattException;
 
 /**
@@ -16,7 +17,7 @@ public final class MarketOrder extends Order implements Cloneable {
 
 	public MarketOrder getClose() {
 		return closePrice;
-		//todo: getClose() + setClose() - Is this the correct implementation?
+		//TODO: getClose() + setClose() - Is this the correct implementation?
 	}
 
 	public double getUnrealizedPL(final FXTick tick) {
@@ -45,7 +46,7 @@ public final class MarketOrder extends Order implements Cloneable {
 
 	public String toString() {
 		return super.toString();
-		//todoproper: Implement toString()
+		//TODOproper: Implement toString()
 	}
 
 
@@ -89,6 +90,10 @@ public final class MarketOrder extends Order implements Cloneable {
 		final StopLossOrder stopLoss = getStopLoss();
 		final TakeProfitOrder takeProfit = getTakeProfit();
 		final double price = getPrice();
+		//TODO Dont allow trade when no margin availible
+		//if (Account.getMarginAvailable() <= 0) {
+		//	throw new OAException("No Margin Availible to Trade");
+		//}
 		if (stopLoss != null) {
 			// If this is a sell, the stopLoss needs to be greater than the execution price
 			if (isShort()) {
