@@ -7,10 +7,10 @@ import com.dojoconsulting.oanda.fxtrade.api.FXTest;
 import com.dojoconsulting.oanda.fxtrade.api.FXTick;
 import com.dojoconsulting.oanda.fxtrade.api.MarketOrder;
 import com.dojoconsulting.oanda.fxtrade.api.OAException;
+import com.dojoconsulting.oanda.fxtrade.api.Position;
 import com.dojoconsulting.oanda.fxtrade.api.RateTable;
-import com.dojoconsulting.oanda.fxtrade.api.StopLossOrder;
-import com.dojoconsulting.oanda.fxtrade.api.TakeProfitOrder;
 import com.dojoconsulting.oanda.fxtrade.api.User;
+import com.dojoconsulting.oanda.fxtrade.api.UtilMath;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,28 +40,37 @@ public class FXNightTraderStrategy implements IStrategy {
 			return;
 		}
 
-		final Date date = new Date(client.getServerTime());
-		final String strDate = DateFormat.getDateInstance().format(date);
-
-		final RateTable table;
 		try {
 			final FXTick tick = rateTable.getRate(pair);
-			if (tick == null) {
+			if (tick == null || tick.getTimestamp() == 0) {
 				return;
 			}
-			final String message = strDate + ": Bought 500 units at " + tick.getBid();
+			final Position p = account.getPosition(pair);
+			if (p != null) {
+				final double buyPrice = p.getPrice();
+				final double sellPrice = tick.getBid();
+				final double pips = UtilMath.round((sellPrice - buyPrice) * 10000, 1);
+				if (pips > 0) {
+					System.out.println("Selling position at profit of " + pips + " pips on " + p.getUnits() + " units");
+					account.close(pair.getPair());
+				}
+				if (pips < 0 && pips > -100) {
+					return;
+				}
+			}
+			final long units = (long) (account.getBalance() * 50 / 100);
 			final MarketOrder mo = new MarketOrder();
 			mo.setPair(pair);
-			mo.setUnits(500);
-			final StopLossOrder stopLoss = new StopLossOrder();
-			stopLoss.setPrice(tick.getAsk() - 20);
-			mo.setStopLoss(stopLoss);
-			final TakeProfitOrder takeProfit = new TakeProfitOrder();
-			takeProfit.setPrice(tick.getAsk() + 1);
-			mo.setTakeProfit(takeProfit);
+			mo.setUnits(units);
 			account.execute(mo);
+
+
+			final Date date = new Date(client.getServerTime());
+			final String strDate = DateFormat.getDateInstance().format(date);
+
+			final String message = strDate + ": Bought " + units + " units at " + tick.getAsk();
 			System.out.println(message);
-			System.out.println(account.toString());
+//			System.out.println(account.toString());
 		}
 		catch (OAException e) {
 			e.printStackTrace();
@@ -73,7 +82,7 @@ public class FXNightTraderStrategy implements IStrategy {
 		try {
 			client = new FXTest();
 			client.login("SomeUserName", "somepassword");
-			pair = new FXPair("GBP/JPY");
+			pair = new FXPair("GBP/USD");
 			final User user = client.getUser();
 			account = user.getAccountWithId(1234);
 			startTime = client.getServerTime();
