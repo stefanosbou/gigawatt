@@ -1,24 +1,17 @@
 /**
  * 
  */
+
 package com.dojoconsulting.gigawatt.core.fximpl;
 
-import java.util.HashMap;
-import java.util.List;
-
 import com.dojoconsulting.gigawatt.config.BackTestConfig;
-import com.dojoconsulting.gigawatt.config.MarketConfig;
-import com.dojoconsulting.oanda.fxtrade.api.FXPair;
+import com.dojoconsulting.gigawatt.core.IInterestRateManager;
 
 /**
  * @author Nick Skaggs
  *
  */
-public class FXInterestRateManager {
-
-	/**
-	 * 
-	 */
+public class FXInterestRateManager implements IInterestRateManager {
 
 	public void init(final BackTestConfig config) {
 		//TODO: Anything to init for int rate manager?

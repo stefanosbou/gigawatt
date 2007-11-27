@@ -26,7 +26,7 @@ public class Position {
 	}
 
 	public String toString() {
-		//TODOproper: Implement toString()
+		//TODO proper: Implement toString()
 		return super.toString();
 	}
 

@@ -3,7 +3,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/google-collect-snapshot-20071022.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hsqldb.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/spring.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/spring.jar" sourcepath="lib/spring.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xpp3_min-1.1.3.4.O.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xstream-1.2.2.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

@@ -46,7 +46,7 @@ public final class MarketOrder extends Order implements Cloneable {
 
 	public String toString() {
 		return super.toString();
-		//TODOproper: Implement toString()
+		//TODO proper: Implement toString()
 	}
 
 
