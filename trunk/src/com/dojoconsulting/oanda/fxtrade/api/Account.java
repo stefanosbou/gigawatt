@@ -175,7 +175,7 @@ public final class Account {
 
 	}
 
-	public void execute(final MarketOrder mo) throws OAException {
+	public boolean execute(final MarketOrder mo) throws OAException {
 		final Map tickTable = engine.getMarketManager().getTickTable();
 
 		final FXPair pair = mo.getPair();
@@ -197,6 +197,11 @@ public final class Account {
 				positions.put(pair, position);
 			}
 			position.addMarketOrder(newOrder);
+			
+			return true;
+		}
+		else {
+			return false;
 		}
 		//TODO: Implement execute(MarketOrder) properly (still needs to check for reversal)
 		

@@ -62,15 +62,21 @@ public class FXNightTraderStrategy implements IStrategy {
 			final MarketOrder mo = new MarketOrder();
 			mo.setPair(pair);
 			mo.setUnits(units);
-			account.execute(mo);
-
-
+			
 			final Date date = new Date(client.getServerTime());
 			final String strDate = DateFormat.getDateInstance().format(date);
-
-			final String message = strDate + ": Bought " + units + " units at " + tick.getAsk();
-			System.out.println(message);
-//			System.out.println(account.toString());
+			final String message;
+			
+			if (account.execute(mo)) {
+				message = strDate + ": Bought " + units + " units at " + tick.getAsk();
+				System.out.println(message);
+//				System.out.println(account.toString());
+			} 
+			else {
+				message = strDate + ": Order failed";
+				System.out.println(message);
+			}
+			
 		}
 		catch (OAException e) {
 			e.printStackTrace();
