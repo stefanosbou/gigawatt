@@ -20,7 +20,7 @@ public class Engine {
 	private IUserManager userManager;
 	private IStrategyManager strategyManager;
 	private IHistoryManager historyManager;
-	private IInterestRateManager interestrateManager;
+	private IInterestRateManager interestRateManager;
 
 	private Log log = LogFactory.getLog(Engine.class);
 
@@ -47,8 +47,8 @@ public class Engine {
 		this.accountManager = accountManager;
 	}
 	
-	public void setInterestRateManager(final IInterestRateManager interestrateManager) {
-		this.interestrateManager = interestrateManager;
+	public void setInterestRateManager(final IInterestRateManager interestRateManager) {
+		this.interestRateManager = interestRateManager;
 	}
 
 	public void init() {
@@ -67,7 +67,7 @@ public class Engine {
 		marketManager.init(config);
 		historyManager.init(config);
 		//TODO: does intrate manager need to go anywhere specific?
-		//interestrateManager.init(config);
+		interestRateManager.init(config);
 		
 
 		// Strategy must go last
@@ -120,7 +120,7 @@ public class Engine {
 		userManager.close();
 		tradeManager.close();
 		//TODO: is int rate manager close needed?
-		interestrateManager.close();
+		interestRateManager.close();
 		strategyManager.close();
 		marketManager.close();
 
@@ -158,7 +158,7 @@ public class Engine {
 	}
 
 	public IInterestRateManager getInterestRateManager() {
-		return interestrateManager;
+		return interestRateManager;
 	}
 	private class Worker extends Thread {
 		public void run() {

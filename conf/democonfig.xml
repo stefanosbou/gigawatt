@@ -29,7 +29,7 @@
 		</user>
 	</users>
 	<strategies>
-		<strategy>com.dojoconsulting.oanda.fxtrade.strategy.BuyAndHoldStrategy</strategy>
+		<strategy>com.dojoconsulting.oanda.fxtrade.strategy.FXNightTraderStrategy</strategy>
 	</strategies>
 
 	<markets>
