@@ -205,7 +205,7 @@ public final class Account {
 	public boolean validatePurchase(final MarketOrder mo) throws AccountException {
 		//TODO: Validate Margin
 		logger.debug("Margin Required " + getMarginRequiredForTrade());
-		if (getMarginRequiredForTrade() > getMarginAvailable()) {
+		if ((getMarginRequiredForTrade() > getMarginAvailable()) || getMarginAvailable() <= 0) {
 			throw new AccountException("Insufficent Margin " + getMarginRequiredForTrade() + " " + getMarginAvailable());
 			//return false;
 		}
