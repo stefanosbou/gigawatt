@@ -46,6 +46,10 @@ public class Engine {
 	public void setAccountManager(final IAccountManager accountManager) {
 		this.accountManager = accountManager;
 	}
+	
+	public void setInterestRateManager(final IInterestRateManager interestrateManager) {
+		this.interestrateManager = interestrateManager;
+	}
 
 	public void init() {
 		final BackTestConfig config = BackTestConfig.load();
@@ -62,6 +66,9 @@ public class Engine {
 		tradeManager.init(config);
 		marketManager.init(config);
 		historyManager.init(config);
+		//TODO: does intrate manager need to go anywhere specific?
+		interestrateManager.init(config);
+		
 
 		// Strategy must go last
 		strategyManager.init(config);
@@ -112,6 +119,8 @@ public class Engine {
 		accountManager.close();
 		userManager.close();
 		tradeManager.close();
+		//TODO: is int rate manager close needed?
+		interestrateManager.close();
 		strategyManager.close();
 		marketManager.close();
 
@@ -148,6 +157,9 @@ public class Engine {
 		return historyManager;
 	}
 
+	public IInterestRateManager getInterestRateManager() {
+		return interestrateManager;
+	}
 	private class Worker extends Thread {
 		public void run() {
 			try {
