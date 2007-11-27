@@ -182,6 +182,8 @@ public final class Account {
 		final FXTick tick = (FXTick) tickTable.get(pair);
 		mo.validate(tick);
 
+		validatePurchase(mo);
+		
 		final int transactionNumber = FXTradeManager.getNextTicketNumber();
 		mo.setTransactionNumber(transactionNumber);
 
@@ -200,6 +202,13 @@ public final class Account {
 		//TODO: Needs to check for sufficient funds.
 	}
 
+	public void validatePurchase(final MarketOrder mo) throws OAException {
+		//TODO: Validate Margin
+		//if (marginRequiredForTrade < getMarginAvailable() {
+		//	throw new OAException("Insufficent Margin");
+		//}
+		
+	}
 	public int getAccountId() {
 		return accountId;
 	}
@@ -303,7 +312,7 @@ public final class Account {
 	public long getCreateDate() {
 		return createDate;
 	}
-
+	
 	public double getMarginAvailable() throws AccountException {
 		final double netAssetValue = getNetAssetValue();
 		final double marginUsed = getMarginUsed();
@@ -344,6 +353,24 @@ public final class Account {
 		}
 
 		return totalMarginUsed;
+	}
+	//TODO: Validate Margin2
+	public double getMarginRequiredForTrade() throws AccountException {
+		final Map tickTable = engine.getMarketManager().getTickTable();
+
+		double marginRequired = 0;
+		final int size = trades.size();
+		for (int i = 0; i < size; i++) {
+			final MarketOrder mo = trades.get(i);
+			final long units = mo.getUnits();
+			final FXPair pair = mo.getPair();
+
+			final double positionValue = UtilMath.calculatePositionValue(pair, units, homeCurrency, tickTable);
+			final double marginRequirement = UtilMath.marginPercentageRequired(pair, leverage);
+			marginRequired = (positionValue * marginRequirement);
+		}
+
+		return marginRequired;
 	}
 
 	public String getProfile() {

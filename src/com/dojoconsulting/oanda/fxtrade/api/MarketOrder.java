@@ -90,10 +90,7 @@ public final class MarketOrder extends Order implements Cloneable {
 		final StopLossOrder stopLoss = getStopLoss();
 		final TakeProfitOrder takeProfit = getTakeProfit();
 		final double price = getPrice();
-		//TODO Dont allow trade when no margin availible
-		//if (Account.getMarginAvailable() <= 0) {
-		//	throw new OAException("No Margin Availible to Trade");
-		//}
+
 		if (stopLoss != null) {
 			// If this is a sell, the stopLoss needs to be greater than the execution price
 			if (isShort()) {

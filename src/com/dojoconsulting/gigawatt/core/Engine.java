@@ -20,6 +20,7 @@ public class Engine {
 	private IUserManager userManager;
 	private IStrategyManager strategyManager;
 	private IHistoryManager historyManager;
+	private IInterestRateManager interestrateManager;
 
 	private Log log = LogFactory.getLog(Engine.class);
 
