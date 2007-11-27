@@ -94,12 +94,12 @@ public final class Transaction implements Cloneable {
 
     public boolean equals(final Object o) {
         return o instanceof Transaction && super.equals(o);
-        //TODOproper: Implement proper equals()
+        //TODO proper: Implement proper equals()
     }
 
     public String toString() {
         return super.toString();
-        //TODOproper: Implement toString()
+        //TODO proper: Implement toString()
     }
 
     public double getAmount() {

@@ -45,7 +45,7 @@ public class FXPair implements Cloneable, IProduct {
 
 	public String toString() {
 		return pair;
-		//TODOproper: Implement toString() - is this correct implementation?
+		//TODO proper: Implement toString() - is this correct implementation?
 	}
 
 	public int compareTo(final FXPair fxpair) {

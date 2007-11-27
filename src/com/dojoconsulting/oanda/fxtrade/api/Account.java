@@ -182,31 +182,34 @@ public final class Account {
 		final FXTick tick = (FXTick) tickTable.get(pair);
 		mo.validate(tick);
 
-		validatePurchase(mo);
-		
-		final int transactionNumber = FXTradeManager.getNextTicketNumber();
-		mo.setTransactionNumber(transactionNumber);
-
-		tradeManager.executeTrade(mo, this);
-		final MarketOrder newOrder = (MarketOrder) mo.clone();
-		trades.add(newOrder);
-
-		Position position = positions.get(pair);
-		if (position == null) {
-			position = new Position(pair);
-			positions.put(pair, position);
-		}
-		position.addMarketOrder(newOrder);
-
-		//TODO: Implement execute(MarketOrder) properly (still needs to check for reversal)
 		//TODO: Needs to check for sufficient funds.
+		if (validatePurchase(mo)) {
+			final int transactionNumber = FXTradeManager.getNextTicketNumber();
+			mo.setTransactionNumber(transactionNumber);
+	
+			tradeManager.executeTrade(mo, this);
+			final MarketOrder newOrder = (MarketOrder) mo.clone();
+			trades.add(newOrder);
+	
+			Position position = positions.get(pair);
+			if (position == null) {
+				position = new Position(pair);
+				positions.put(pair, position);
+			}
+			position.addMarketOrder(newOrder);
+		}
+		//TODO: Implement execute(MarketOrder) properly (still needs to check for reversal)
+		
 	}
 
-	public void validatePurchase(final MarketOrder mo) throws OAException {
+	public boolean validatePurchase(final MarketOrder mo) throws AccountException {
 		//TODO: Validate Margin
-		//if (marginRequiredForTrade < getMarginAvailable() {
-		//	throw new OAException("Insufficent Margin");
-		//}
+		logger.debug("Margin Required " + getMarginRequiredForTrade());
+		if (getMarginRequiredForTrade() > getMarginAvailable()) {
+			throw new AccountException("Insufficent Margin " + getMarginRequiredForTrade() + " " + getMarginAvailable());
+			//return false;
+		}
+		return true;
 		
 	}
 	public int getAccountId() {
@@ -412,14 +415,14 @@ public final class Account {
 		} catch (AccountException e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 		}
-		//TODOproper: Implement toString()
+		//TODO proper: Implement toString()
 		return super.toString();
 	}
 
 	void process() {
 		try {
 			if (engine.getMarketManager().newTicksThisLoop() && trades.size() > 0) {
-				logger.info("Currenct NAV/Balance: " + getNetAssetValue() + " " + getBalance());
+				logger.debug("Current NAV/Balance: " + getNetAssetValue() + " " + getBalance());
 				if (getNetAssetValue() <= getMarginCallRate()) {
 					logger.info("Margin Call on Account: " + accountId);
 					final int size = trades.size();
@@ -442,7 +445,7 @@ public final class Account {
 				}
 			}
 		} catch (AccountException e) {
-			e.printStackTrace();  //TODOerror: Improve error handling.
+			e.printStackTrace();  //TODO error: Improve error handling.
 		}
 	}
 

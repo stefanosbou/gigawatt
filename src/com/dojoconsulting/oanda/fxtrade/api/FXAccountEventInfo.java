@@ -21,13 +21,13 @@ public final class FXAccountEventInfo extends FXEventInfo {
     }
 
     public boolean equals(final Object other) {
-        //TODOproper: Implement proper equals()
+        //TODO proper: Implement proper equals()
         return other instanceof FXAccountEventInfo && super.equals(other);
     }
 
     public int compareTo(final Object other) {
         return 0;
-        //TODOproper: Implement proper compareTo()
+        //TODO proper: Implement proper compareTo()
     }
 
 }

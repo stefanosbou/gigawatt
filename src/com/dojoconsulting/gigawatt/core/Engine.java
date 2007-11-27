@@ -67,7 +67,7 @@ public class Engine {
 		marketManager.init(config);
 		historyManager.init(config);
 		//TODO: does intrate manager need to go anywhere specific?
-		interestrateManager.init(config);
+		//interestrateManager.init(config);
 		
 
 		// Strategy must go last
