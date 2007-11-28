@@ -175,48 +175,41 @@ public final class Account {
 
 	}
 
-	public boolean execute(final MarketOrder mo) throws OAException {
+	public void execute(final MarketOrder mo) throws OAException {
 		final Map tickTable = engine.getMarketManager().getTickTable();
 
 		final FXPair pair = mo.getPair();
 		final FXTick tick = (FXTick) tickTable.get(pair);
 		mo.validate(tick);
 
-		//TODO: Needs to check for sufficient funds.
-		if (validatePurchase(mo)) {
-			final int transactionNumber = FXTradeManager.getNextTicketNumber();
-			mo.setTransactionNumber(transactionNumber);
-	
-			tradeManager.executeTrade(mo, this);
-			final MarketOrder newOrder = (MarketOrder) mo.clone();
-			trades.add(newOrder);
-	
-			Position position = positions.get(pair);
-			if (position == null) {
-				position = new Position(pair);
-				positions.put(pair, position);
-			}
-			position.addMarketOrder(newOrder);
-			
-			return true;
+		if (!validatePurchase(mo)) {
+			throw new AccountException("Insufficent funds.");
 		}
-		else {
-			return false;
+		final int transactionNumber = FXTradeManager.getNextTicketNumber();
+		mo.setTransactionNumber(transactionNumber);
+
+		tradeManager.executeTrade(mo, this);
+		final MarketOrder newOrder = (MarketOrder) mo.clone();
+		trades.add(newOrder);
+
+		Position position = positions.get(pair);
+		if (position == null) {
+			position = new Position(pair);
+			positions.put(pair, position);
 		}
+		position.addMarketOrder(newOrder);
+
 		//TODO: Implement execute(MarketOrder) properly (still needs to check for reversal)
-		
 	}
 
 	public boolean validatePurchase(final MarketOrder mo) throws AccountException {
-		//TODO: Validate Margin
-		logger.debug("Margin Required " + getMarginRequiredForTrade());
-		if ((getMarginRequiredForTrade() > getMarginAvailable()) || getMarginAvailable() <= 0) {
-			throw new AccountException("Insufficent Margin " + getMarginRequiredForTrade() + " " + getMarginAvailable());
-			//return false;
+		final double marginRequired = getMarginRequiredForTrade(mo);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Margin Required " + marginRequired);
 		}
-		return true;
-		
+		return marginRequired <= getMarginAvailable();
 	}
+
 	public int getAccountId() {
 		return accountId;
 	}
@@ -299,7 +292,7 @@ public final class Account {
 	}
 
 	public MarketOrder getTradeWithId(final int transactionNumber) throws AccountException {
-		// todo: Should this return null or throw AccountException if not found
+		// TODO: Should this return null or throw AccountException if not found
 		final MarketOrder order = internalGetTradeWithId(transactionNumber);
 		if (order != null) {
 			return (MarketOrder) order.clone();
@@ -320,7 +313,7 @@ public final class Account {
 	public long getCreateDate() {
 		return createDate;
 	}
-	
+
 	public double getMarginAvailable() throws AccountException {
 		final double netAssetValue = getNetAssetValue();
 		final double marginUsed = getMarginUsed();
@@ -340,8 +333,6 @@ public final class Account {
 	}
 
 	public double getMarginRate() {
-		//TODO: Implement getMarginRate()
-		// Possibly the inverse of Leverage?
 		return 1 / leverage;
 	}
 
@@ -362,23 +353,16 @@ public final class Account {
 
 		return totalMarginUsed;
 	}
-	//TODO: Validate Margin2
-	public double getMarginRequiredForTrade() throws AccountException {
+
+	private double getMarginRequiredForTrade(final MarketOrder mo) throws AccountException {
 		final Map tickTable = engine.getMarketManager().getTickTable();
 
-		double marginRequired = 0;
-		final int size = trades.size();
-		for (int i = 0; i < size; i++) {
-			final MarketOrder mo = trades.get(i);
-			final long units = mo.getUnits();
-			final FXPair pair = mo.getPair();
+		final long units = mo.getUnits();
+		final FXPair pair = mo.getPair();
 
-			final double positionValue = UtilMath.calculatePositionValue(pair, units, homeCurrency, tickTable);
-			final double marginRequirement = UtilMath.marginPercentageRequired(pair, leverage);
-			marginRequired = (positionValue * marginRequirement);
-		}
-
-		return marginRequired;
+		final double positionValue = UtilMath.calculatePositionValue(pair, units, homeCurrency, tickTable);
+		final double marginRequirement = UtilMath.marginPercentageRequired(pair, leverage);
+		return (positionValue * marginRequirement);
 	}
 
 	public String getProfile() {
@@ -438,7 +422,7 @@ public final class Account {
 					trades.clear();
 					positions.clear();
 				}
-				if (getBalance() <= 0 ) {
+				if (getBalance() <= 0) {
 					logger.info("Account Busted: " + accountId);
 					final int size = trades.size();
 					for (int i = 0; i < size; i++) {
