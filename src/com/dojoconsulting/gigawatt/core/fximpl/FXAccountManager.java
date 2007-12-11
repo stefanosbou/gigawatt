@@ -25,26 +25,27 @@ import java.util.Vector;
 public class FXAccountManager implements IAccountManager {
 	private static Log logger = LogFactory.getLog(FXAccountManager.class);
 
-	private List<Account> accounts;
+	private Account[] accounts;
 
 	private IUserManager userManager;
 	private Engine engine;
 
 	public void init(final BackTestConfig config) {
-		accounts = new ArrayList<Account>();
+		final List<Account> allAccounts = new ArrayList<Account>();
 		final List<UserConfig> userConfigs = config.getUsers();
 
 		for (final UserConfig u : userConfigs) {
 			final List<AccountConfig> accountConfigs = u.getAccounts();
-			final Vector<Account> accountVector = new Vector<Account>();
+			final List<Account> accountVector = new Vector<Account>();
 			for (final AccountConfig a : accountConfigs) {
 				final Account account = UtilAPI.createAccount(a.getId(), a.getBalance(), a.getCurrency(), a.getName(), a.getCreatedate().getTime(), a.getLeverage(), engine);
-				accounts.add(account);
+				allAccounts.add(account);
 				accountVector.add(account);
 			}
 			final User user = (User) userManager.getUser(u.getUsername());
 			UtilAPI.setUserAccounts(user, accountVector);
 		}
+		accounts = allAccounts.toArray(new Account[allAccounts.size()]);
 	}
 
 	public Account getAccountWithId(final int accountId) {

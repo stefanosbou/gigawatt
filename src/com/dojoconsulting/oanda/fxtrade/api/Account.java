@@ -402,7 +402,7 @@ public final class Account {
 
 			return result;
 		} catch (AccountException e) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+			e.printStackTrace();
 		}
 		//TODO proper: Implement toString()
 		return super.toString();
@@ -411,19 +411,11 @@ public final class Account {
 	void process() {
 		try {
 			if (engine.getMarketManager().newTicksThisLoop() && trades.size() > 0) {
-				logger.debug("Current NAV/Balance: " + getNetAssetValue() + " " + getBalance());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Current NAV/Balance: " + getNetAssetValue() + " " + getBalance());
+				}
 				if (getNetAssetValue() <= getMarginCallRate()) {
 					logger.info("Margin Call on Account: " + accountId);
-					final int size = trades.size();
-					for (int i = 0; i < size; i++) {
-						final MarketOrder trade = trades.get(i);
-						closeTrade(trade);
-					}
-					trades.clear();
-					positions.clear();
-				}
-				if (getBalance() <= 0) {
-					logger.info("Account Busted: " + accountId);
 					final int size = trades.size();
 					for (int i = 0; i < size; i++) {
 						final MarketOrder trade = trades.get(i);

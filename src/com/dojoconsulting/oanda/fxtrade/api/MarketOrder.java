@@ -1,6 +1,5 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
-import com.dojoconsulting.gigawatt.core.Engine;
 import com.dojoconsulting.gigawatt.core.GigawattException;
 
 /**

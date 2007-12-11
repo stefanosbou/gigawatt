@@ -1,12 +1,16 @@
 package com.dojoconsulting.gigawatt.tools;
 
 import com.dojoconsulting.gigawatt.core.GigawattException;
+import com.dojoconsulting.oanda.fxtrade.api.UtilMath;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -23,6 +27,7 @@ public class OandaToGigawattTickConvertor {
 	private static final String CSV_DELIMITER = ",";
 	private static final String ASCII_DELIMITER = " ";
 	private static final String USAGE = "Usage: java OandaToGigawattTickConvertor <ASCII|CSV> <fromFile> <toFile>";
+	private static Log logger = LogFactory.getLog(OandaToGigawattTickConvertor.class);
 
 	public static void main(final String[] args) {
 		if (args.length != 3) {
@@ -45,14 +50,21 @@ public class OandaToGigawattTickConvertor {
 
 	public void convert(final String mode, final String from, final String to) {
 		final BufferedReader in;
-		final BufferedWriter out;
+		final DataOutputStream out;
+
+		int totalCounter = 0;
+		int discardedCounter = 0;
+		int includedCounter = 0;
+
+		double lastBid = 0;
+		double lastAsk = 0;
 
 		final RecordProcessor processor = mode.equals("ASCII") ? new AsciiRecordProcessor() : new CsvRecordProcessor();
 		final DateFormat formatter = new SimpleDateFormat("dd/MM/yy hh:mm:ss");
 		String currentToken = "";
 		try {
 			in = new BufferedReader(new FileReader(from));
-			out = new BufferedWriter(new FileWriter(to));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(to)));
 			while (in.ready()) {
 				final String dataRecord = in.readLine();
 				if (dataRecord == null) {
@@ -62,12 +74,32 @@ public class OandaToGigawattTickConvertor {
 				currentToken = tokens[0];
 				final Date date = formatter.parse(currentToken);
 				final long millis = date.getTime();
-				final String bid = tokens[1];
-				final String ask = tokens[2];
-				out.write(millis + CSV_DELIMITER + bid + CSV_DELIMITER + ask + "\n");
+				final double bid = UtilMath.round(Double.parseDouble(tokens[1]), 6);
+				final double ask = UtilMath.round(Double.parseDouble(tokens[2]), 6);
+				if (lastBid == bid && lastAsk == ask) {
+					discardedCounter += 1;
+				} else {
+					includedCounter += 1;
+					out.writeLong(millis);
+					out.writeDouble(bid);
+					out.writeDouble(ask);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Writing bid (" + bid + ") from token  " + tokens[1]);
+						logger.debug("Writing ask (" + ask + ") from token  " + tokens[2]);
+					}
+					lastBid = bid;
+					lastAsk = ask;
+				}
+				totalCounter += 1;
+				if (logger.isInfoEnabled()) {
+					if (totalCounter % 100000 == 0) {
+						logger.info(totalCounter + " processed. (Included:" + includedCounter + ", Discarded:" + discardedCounter + ") ...");
+					}
+				}
 			}
 			out.flush();
 			out.close();
+			logger.info(totalCounter + " processed. (Included:" + includedCounter + ", Discarded:" + discardedCounter + ")");
 		}
 		catch (FileNotFoundException e) {
 			throw new GigawattException("OandaToGigawattTickConvertor: Could not find the file (" + from + ") for conversion", e);

@@ -28,7 +28,8 @@ public class FXNightTraderStrategy implements IStrategy {
 
 	private FXTest client;
 	private FXPair pair;
-	private Account account;
+	private Account primaryAccount;
+	private Account hedgeAccount;
 	private long startTime;
 	private RateTable rateTable;
 
@@ -39,7 +40,11 @@ public class FXNightTraderStrategy implements IStrategy {
 		if (time % SECS_IN_A_DAY != 0) {
 			return;
 		}
+		doStrategy(primaryAccount, true);
+		doStrategy(hedgeAccount, false);
+	}
 
+	private void doStrategy(final Account account, final boolean goLong) {
 		try {
 			final FXTick tick = rateTable.getRate(pair);
 			if (tick == null || tick.getTimestamp() == 0) {
@@ -48,28 +53,36 @@ public class FXNightTraderStrategy implements IStrategy {
 			final Position p = account.getPosition(pair);
 			if (p != null) {
 				final double buyPrice = p.getPrice();
-				final double sellPrice = tick.getBid();
-				final double pips = UtilMath.round((sellPrice - buyPrice) * 10000, 1);
+				final double sellPrice = (goLong ? tick.getBid() : tick.getAsk());
+				final double dif = (goLong ? sellPrice - buyPrice : buyPrice - sellPrice);
+				final double pips = UtilMath.round(dif * 10000, 1);
 				if (pips > 0) {
-					System.out.println("Selling position at profit of " + pips + " pips on " + p.getUnits() + " units");
+					if (logger.isInfoEnabled()) {
+						logger.info("Selling position at profit of " + pips + " pips on " + p.getUnits() + " units on Account " + account.getAccountId());
+					}
 					account.close(pair.getPair());
 				}
 				if (pips < 0 && pips > -100) {
 					return;
 				}
 			}
-			final long units = (long) (account.getBalance() * 50 / 100);
+			long units = (long) (account.getBalance() * 50 / 1000);
+			if (!goLong) {
+				units *= -1;
+			}
 			final MarketOrder mo = new MarketOrder();
 			mo.setPair(pair);
 			mo.setUnits(units);
 
-			final Date date = new Date(client.getServerTime());
-			final String strDate = DateFormat.getDateInstance().format(date);
-			final String message;
-
 			account.execute(mo);
-			message = strDate + ": Bought " + units + " units at " + tick.getAsk();
-			System.out.println(message);
+
+			if (logger.isInfoEnabled()) {
+				final Date date = new Date(client.getServerTime());
+				final String strDate = DateFormat.getDateInstance().format(date);
+				final String message;
+				message = strDate + ": Bought " + units + " units at " + (goLong ? tick.getAsk() : tick.getBid());
+				logger.info(message);
+			}
 		}
 		catch (OAException e) {
 			e.printStackTrace();
@@ -82,7 +95,8 @@ public class FXNightTraderStrategy implements IStrategy {
 			client.login("SomeUserName", "somepassword");
 			pair = new FXPair("GBP/USD");
 			final User user = client.getUser();
-			account = user.getAccountWithId(1234);
+			primaryAccount = user.getAccountWithId(1234);
+			hedgeAccount = user.getAccountWithId(4321);
 			startTime = client.getServerTime();
 			rateTable = client.getRateTable();
 		}
