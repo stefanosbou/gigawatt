@@ -1,6 +1,7 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.GigawattException;
+import com.dojoconsulting.gigawatt.core.fximpl.FXPairFlyweightFactory;
 
 import java.util.Map;
 
@@ -12,6 +13,17 @@ import java.util.Map;
  */
 public class UtilMath {
 
+	private static final FXTick PARITY_TICK = new FXTick(0, 1.0, 1.0);
+
+	private static long[] factors = new long[10];
+	private static final FXPairFlyweightFactory fxPairFactory = FXPairFlyweightFactory.getInstance();
+
+	static {
+		for (int i = 0; i < 10; i++) {
+			factors[i] = (long) Math.pow(10, i);
+		}
+	}
+
 	/**
 	 * Round a double value to a specified number of decimal
 	 * places.
@@ -21,14 +33,20 @@ public class UtilMath {
 	 * @return val rounded to places decimal places.
 	 */
 	public static double round(double val, final int places) {
-		final long factor = (long) Math.pow(10, places);
+		final long factor;
+		if (places < 10) {
+			factor = factors[places];
+		} else {
+			factor = (long) Math.pow(10, places);
+		}
 
 		// Shift the decimal the correct number of places
 		// to the right.
 		val = val * factor;
 
 		// Round to the nearest integer.
-		final long tmp = Math.round(val);
+		val = val + 0.5;
+		final long tmp = (long) val;
 
 		// Shift the decimal the correct number of places
 		// back to the left.
@@ -59,9 +77,9 @@ public class UtilMath {
 
 	public static FXTick getConverstionRate(final String base, final String quote, final Map tickTable) {
 		if (base.equals(quote)) {
-			return new FXTick(0, 1.0, 1.0);
+			return PARITY_TICK;
 		}
-		FXPair pair = new FXPair(base, quote);
+		FXPair pair = fxPairFactory.getPair(base, quote);
 		FXTick tick = (FXTick) tickTable.get(pair);
 		if (tick != null) {
 			return tick;

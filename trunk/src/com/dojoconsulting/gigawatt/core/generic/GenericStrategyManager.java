@@ -5,7 +5,6 @@ import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.core.IStrategyManager;
 import com.dojoconsulting.gigawatt.strategy.IStrategy;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,19 +14,21 @@ import java.util.List;
  * Time: 22:57:46
  */
 public class GenericStrategyManager implements IStrategyManager {
-	private List<IStrategy> strategies;
+	private IStrategy[] strategies;
 
 
 	public void init(final BackTestConfig config) {
-		strategies = new ArrayList<IStrategy>();
 		final List<String> strategyClassNames = config.getStrategies();
+		final int size = strategyClassNames.size();
+		strategies = new IStrategy[size];
 		String classNameHack = null;
 		try {
-			for (final String className : strategyClassNames) {
+			for (int i = 0; i < size; i++) {
+				final String className = strategyClassNames.get(i);
 				classNameHack = className;
 				final Class strategyClass = Class.forName(className);
 				final IStrategy strategy = (IStrategy) strategyClass.newInstance();
-				strategies.add(strategy);
+				strategies[i] = strategy;
 			}
 		}
 		catch (ClassNotFoundException e) {

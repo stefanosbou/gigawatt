@@ -1,6 +1,7 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.GigawattException;
+import com.dojoconsulting.gigawatt.core.fximpl.FXPairFlyweightFactory;
 import com.dojoconsulting.gigawatt.data.IProduct;
 
 import java.util.ArrayList;
@@ -13,8 +14,10 @@ public class FXPair implements Cloneable, IProduct {
 	private String base;
 	private String quote;
 	private String pair;
+	private boolean major;
 
 	private static final List<String> majors = new ArrayList<String>();
+	private static FXPairFlyweightFactory fxFactory = FXPairFlyweightFactory.getInstance();
 
 	static {
 		majors.add("AUD");
@@ -37,6 +40,7 @@ public class FXPair implements Cloneable, IProduct {
 		this.quote = quote;
 		this.pair = base + "/" + quote;
 		//TODO:  Throw exception if it is an invalid FXPair
+		this.major = majors.contains(base) && majors.contains(quote);
 	}
 
 	public FXPair(final String pair) {
@@ -73,7 +77,7 @@ public class FXPair implements Cloneable, IProduct {
 	}
 
 	public FXPair getInverse() {
-		return new FXPair(quote, base);
+		return fxFactory.getPair(quote, base);
 	}
 
 	public void setBase(final String base) {
@@ -103,6 +107,6 @@ public class FXPair implements Cloneable, IProduct {
 	}
 
 	boolean isMajor() {
-		return majors.contains(base) && majors.contains(quote);
+		return major;
 	}
 }

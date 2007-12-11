@@ -21,35 +21,12 @@ public class Engine {
 	private IStrategyManager strategyManager;
 	private IHistoryManager historyManager;
 	private IInterestRateManager interestRateManager;
+	private ITransactionManager transactionManager;
 
 	private Log log = LogFactory.getLog(Engine.class);
 
 	private boolean running;
 	private long logStartTime;
-
-	public void setTradeManager(final ITradeManager tradeManager) {
-		this.tradeManager = tradeManager;
-	}
-
-	public void setStrategyManager(final IStrategyManager strategyManager) {
-		this.strategyManager = strategyManager;
-	}
-
-	public void setUserManager(final IUserManager userManager) {
-		this.userManager = userManager;
-	}
-
-	public void setMarketManager(final IMarketManager marketManager) {
-		this.marketManager = marketManager;
-	}
-
-	public void setAccountManager(final IAccountManager accountManager) {
-		this.accountManager = accountManager;
-	}
-	
-	public void setInterestRateManager(final IInterestRateManager interestRateManager) {
-		this.interestRateManager = interestRateManager;
-	}
 
 	public void init() {
 		final BackTestConfig config = BackTestConfig.load();
@@ -66,9 +43,8 @@ public class Engine {
 		tradeManager.init(config);
 		marketManager.init(config);
 		historyManager.init(config);
-		//TODO: does intrate manager need to go anywhere specific?
 		interestRateManager.init(config);
-		
+		transactionManager.init(config);
 
 		// Strategy must go last
 		strategyManager.init(config);
@@ -123,10 +99,60 @@ public class Engine {
 		interestRateManager.close();
 		strategyManager.close();
 		marketManager.close();
+		transactionManager.close();
 
 		log.info("FXOandaBackTest has finished.");
 		final long totalTime = new Date().getTime() - logStartTime;
 		log.info("Test took " + totalTime);
+	}
+
+	private class Worker extends Thread {
+		public void run() {
+			try {
+				loop();
+			}
+			catch (GigawattException e) {
+				log.error("An error has occured that has ceased the running of Gigawatt.", e);
+				if (e.getSpecificAPIException() != null) {
+					log.error("The underlying exception was:", e.getSpecificAPIException());
+				}
+				stopped();
+				System.exit(1);
+			}
+		}
+	}
+
+	/* Spring beans */
+	public void setTradeManager(final ITradeManager tradeManager) {
+		this.tradeManager = tradeManager;
+	}
+
+	public void setStrategyManager(final IStrategyManager strategyManager) {
+		this.strategyManager = strategyManager;
+	}
+
+	public void setUserManager(final IUserManager userManager) {
+		this.userManager = userManager;
+	}
+
+	public void setMarketManager(final IMarketManager marketManager) {
+		this.marketManager = marketManager;
+	}
+
+	public void setAccountManager(final IAccountManager accountManager) {
+		this.accountManager = accountManager;
+	}
+
+	public void setInterestRateManager(final IInterestRateManager interestRateManager) {
+		this.interestRateManager = interestRateManager;
+	}
+
+	public void setHistoryManager(final IHistoryManager historyManager) {
+		this.historyManager = historyManager;
+	}
+
+	public void setTransactionManager(final ITransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
 	}
 
 	public IMarketManager getMarketManager() {
@@ -149,10 +175,6 @@ public class Engine {
 		return strategyManager;
 	}
 
-	public void setHistoryManager(final IHistoryManager historyManager) {
-		this.historyManager = historyManager;
-	}
-
 	public IHistoryManager getHistoryManager() {
 		return historyManager;
 	}
@@ -160,20 +182,7 @@ public class Engine {
 	public IInterestRateManager getInterestRateManager() {
 		return interestRateManager;
 	}
-	private class Worker extends Thread {
-		public void run() {
-			try {
-				loop();
-			}
-			catch (GigawattException e) {
-				log.error("An error has occured that has ceased the running of Gigawatt.", e);
-				if (e.getSpecificAPIException() != null) {
-					log.error("The underlying exception was:", e.getSpecificAPIException());
-				}
-				stopped();
-				System.exit(1);
-			}
-		}
-	}
+
+	/* End of Spring beans */
 
 }

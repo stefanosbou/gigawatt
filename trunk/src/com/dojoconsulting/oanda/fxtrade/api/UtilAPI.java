@@ -2,14 +2,14 @@ package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.Engine;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * A file of horrid hacks to keep the API interface matched to OANDA.
  */
 public class UtilAPI {
 
-	public static void setUserAccounts(final User user, final Vector<Account> accounts) {
+	public static void setUserAccounts(final User user, final List<Account> accounts) {
 		user.setAccounts(accounts);
 	}
 

@@ -10,7 +10,8 @@
 		<property name="accountManager" ref="accountManager"/>
 		<property name="userManager" ref="userManager"/>
 		<property name="strategyManager" ref="strategyManager"/>
- 		<property name="interestRateManager" ref="interestRateManager"/>
+		<property name="interestRateManager" ref="interestRateManager"/>
+		<property name="transactionManager" ref="transactionManager"/>
 	</bean>
 
 	<bean id="marketManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXMarketManager">
@@ -28,4 +29,5 @@
 	<bean id="strategyManager" class="com.dojoconsulting.gigawatt.core.generic.GenericStrategyManager"/>
 	<bean id="historyManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXHistoryManager"/>
 	<bean id="interestRateManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXInterestRateManager"/>
+	<bean id="transactionManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXTransactionManager"/>
 </beans>

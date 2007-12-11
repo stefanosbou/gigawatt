@@ -5,6 +5,7 @@ import com.dojoconsulting.gigawatt.config.MarketConfig;
 import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.core.IHistoryManager;
 import com.dojoconsulting.gigawatt.core.IMarketManager;
+import com.dojoconsulting.gigawatt.core.TimeServer;
 import com.dojoconsulting.gigawatt.data.IMarketData;
 import com.dojoconsulting.oanda.fxtrade.api.FXPair;
 import com.dojoconsulting.oanda.fxtrade.api.FXTick;
@@ -13,7 +14,6 @@ import com.google.common.collect.Multimap;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,23 +26,26 @@ import java.util.Map;
  */
 public class FXMarketManager implements IMarketManager {
 
-	private final Map<FXPair, IMarketData> markets;
+	private IMarketData[] markets;
 	private final Map<FXPair, FXTick> tickTable;
 	private final Multimap<FXPair, FXTick> perLoopTickTable;
 	private boolean newTicksThisLoop;
 	private IHistoryManager historyManager;
+	private TimeServer timeServer;
 
 	public FXMarketManager() {
-		markets = new HashMap<FXPair, IMarketData>();
 		tickTable = new HashMap<FXPair, FXTick>();
 		perLoopTickTable = new ArrayListMultimap<FXPair, FXTick>();
 	}
 
 	public void init(final BackTestConfig config) {
 		final List<MarketConfig> marketConfigs = config.getMarkets();
+		final int numberOfConfigs = marketConfigs.size();
+		markets = new IMarketData[numberOfConfigs];
 		String className = null;
 		try {
-			for (final MarketConfig marketConfig : marketConfigs) {
+			for (int i = 0; i < numberOfConfigs; i++) {
+				final MarketConfig marketConfig = marketConfigs.get(i);
 				final FXPair pair = new FXPair(marketConfig.getProduct());
 				final String filename = marketConfig.getFilename();
 
@@ -53,7 +56,8 @@ public class FXMarketManager implements IMarketManager {
 
 				marketData.setMarketManager(this);
 				marketData.init();
-				markets.put(pair, marketData);
+				markets[i] = marketData;
+				perLoopTickTable.put((FXPair) marketData.getProduct(), null);
 			}
 		}
 		catch (ClassNotFoundException e) {
@@ -72,11 +76,7 @@ public class FXMarketManager implements IMarketManager {
 			throw new GigawattException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
 		}
 
-		final Collection<IMarketData> marketValues = markets.values();
-		for (final IMarketData marketData : marketValues) {
-			perLoopTickTable.put((FXPair) marketData.getProduct(), null);
-		}
-
+		timeServer = TimeServer.getInstance();
 	}
 
 	public boolean newTicksThisLoop() {
@@ -84,8 +84,7 @@ public class FXMarketManager implements IMarketManager {
 	}
 
 	public boolean hasMoreTicks() {
-		final Collection<IMarketData> marketValues = markets.values();
-		for (final IMarketData marketData : marketValues) {
+		for (final IMarketData marketData : markets) {
 			if (marketData.hasMoreTicks()) {
 				return true;
 			}
@@ -103,15 +102,16 @@ public class FXMarketManager implements IMarketManager {
 
 	public void registerTick(final FXPair pair, final FXTick tick) {
 		newTicksThisLoop = true;
-		perLoopTickTable.put(pair, tick);
+		if (timeServer.isAfterStart(tick.getTimestamp())) {
+			perLoopTickTable.put(pair, tick);
+		}
 		historyManager.registerTick(pair, tick);
 	}
 
 	public void nextTick(final long currentTimeInMillis) {
 		newTicksThisLoop = false;
 		perLoopTickTable.clear();
-		final Collection<IMarketData> marketValues = markets.values();
-		for (final IMarketData marketData : marketValues) {
+		for (final IMarketData marketData : markets) {
 			final FXTick tick = (FXTick) marketData.getNextTick(currentTimeInMillis);
 			if (tick != null && tick.getTimestamp() != 0) {
 				tickTable.put((FXPair) marketData.getProduct(), tick);

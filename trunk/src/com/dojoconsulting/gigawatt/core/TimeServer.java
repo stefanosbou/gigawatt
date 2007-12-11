@@ -13,38 +13,47 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class TimeServer {
-    private static TimeServer instance = new TimeServer();
-    private static int TIME_INCREMENT;
-    private String startDateAsString;
-    private Date startDate;
+	private static TimeServer instance = new TimeServer();
+	private static int TIME_INCREMENT;
+	private String startDateAsString;
+	private long startDateAsMillis;
+	private Date startDate;
 
-    public static TimeServer getInstance() {
-        return instance;
-    }
+	public static TimeServer getInstance() {
+		return instance;
+	}
 
-    private TimeServer() {
-    }
+	private TimeServer() {
+	}
 
-    private long currentTimeInMillis;
+	private long currentTimeInMillis;
 
-    void init(final BackTestConfig config) {
-        startDate = config.getStartdate();
-        startDateAsString = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(startDate);
-        currentTimeInMillis = startDate.getTime();
-        TIME_INCREMENT = config.getIncrement();
-    }
+	void init(final BackTestConfig config) {
+		startDate = config.getStartdate();
+		startDateAsString = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(startDate);
+		currentTimeInMillis = startDate.getTime();
+		startDateAsMillis = currentTimeInMillis;
+		TIME_INCREMENT = config.getIncrement();
+	}
 
-    public long getTime() {
-        return currentTimeInMillis;
-    }
+	public long getTime() {
+		return currentTimeInMillis;
+	}
 
-    public long processNextLoop() {
-        currentTimeInMillis += TIME_INCREMENT;
-        return currentTimeInMillis;
-    }
+	public long processNextLoop() {
+		currentTimeInMillis += TIME_INCREMENT;
+		return currentTimeInMillis;
+	}
 
-    public String getStartDateAsString() {
-        return startDateAsString;
-    }
+	public String getStartDateAsString() {
+		return startDateAsString;
+	}
 
+	public boolean isBeforeStart(final long millis) {
+		return millis < startDateAsMillis;
+	}
+
+	public boolean isAfterStart(final long millis) {
+		return millis > startDateAsMillis;
+	}
 }

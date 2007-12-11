@@ -40,16 +40,12 @@ public class BuyAndHoldStrategy implements IStrategy {
 			return;
 		}
 
-		final Date date = new Date(client.getServerTime());
-		final String strDate = DateFormat.getDateInstance().format(date);
-
 		try {
 			final FXTick tick = rateTable.getRate(pair);
 			if (tick == null) {
 				return;
 			}
 			final long units = (long) (account.getBalance() * 50 / 100);
-			final String message = strDate + ": Bought " + units + " units at " + tick.getBid();
 			final MarketOrder mo = new MarketOrder();
 			mo.setPair(pair);
 			mo.setUnits(units);
@@ -60,7 +56,14 @@ public class BuyAndHoldStrategy implements IStrategy {
 			takeProfit.setPrice(tick.getAsk() + 0.01);
 			mo.setTakeProfit(takeProfit);
 			account.execute(mo);
-			logger.info(message);
+
+			if (logger.isInfoEnabled()) {
+				final Date date = new Date(client.getServerTime());
+				final String strDate = DateFormat.getDateInstance().format(date);
+
+				final String message = strDate + ": Bought " + units + " units at " + tick.getBid();
+				logger.info(message);
+			}
 		}
 		catch (OAException e) {
 			e.printStackTrace();

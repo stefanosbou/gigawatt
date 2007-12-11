@@ -10,7 +10,7 @@ import java.text.ParseException;
  * Time: 07:55:52
  * GigawattFormatMarketData expects a file that has data in the format of "timestamp,bid,ask"
  */
-public class GigawattFormatMarketData extends GenericFXMarketDataReader {
+public class GigawattFormatMarketData extends AbstractFileMarketDataReader {
 
 	public GigawattFormatMarketData(final FXPair pair, final String path) {
 		super(pair, path);

@@ -13,7 +13,7 @@ import java.util.Date;
  * Time: 07:55:52
  * OandaASCIITickMarketData expects a file that has data in the format of "dd/MM/yyyy hh:mm:ss bid ask"
  */
-public class OandaASCIITickMarketData extends GenericFXMarketDataReader {
+public class OandaASCIITickMarketData extends AbstractFileMarketDataReader {
 
 	final DateFormat formatter = new SimpleDateFormat("dd/MM/yy hh:mm:ss");
 
@@ -27,6 +27,7 @@ public class OandaASCIITickMarketData extends GenericFXMarketDataReader {
 		tickRecord.setTimeInMillis(date.getTime());
 		tickRecord.setBid(Double.parseDouble(tokens[2]));
 		tickRecord.setAsk(Double.parseDouble(tokens[3]));
+		tickRecord.setEmpty(false);
 	}
 
 

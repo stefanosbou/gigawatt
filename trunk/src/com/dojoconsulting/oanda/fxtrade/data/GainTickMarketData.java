@@ -14,7 +14,7 @@ import java.util.Date;
  * GainTickMarketData expects a file that has data in the format of dd/MM/yyyy hh:mm:ss,bid,ask
  * <p/>
  */
-public class GainTickMarketData extends GenericFXMarketDataReader {
+public class GainTickMarketData extends AbstractFileMarketDataReader {
 
 	final DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 

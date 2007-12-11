@@ -13,7 +13,7 @@ import java.util.Date;
  * Time: 07:55:52
  * EODMarketData expects a file that has data in the format of dd.mm.yyyy,price
  */
-public class EODMarketData extends GenericFXMarketDataReader {
+public class EODMarketData extends AbstractFileMarketDataReader {
 
 	final DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 
