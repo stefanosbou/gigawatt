@@ -75,6 +75,9 @@ public final class MarketOrder extends Order implements Cloneable {
 	}
 
 	void validate(final FXTick tick) throws OAException {
+		if (getPair() == null) {
+			throw new OAException("You must set a valid pair.");
+		}
 		if (isShort()) {
 			setPrice(tick.getBid());
 		} else if (isLong()) {
@@ -120,14 +123,6 @@ public final class MarketOrder extends Order implements Cloneable {
 		}
 	}
 
-	boolean isLong() {
-		return getUnits() > 0;
-	}
-
-	boolean isShort() {
-		return getUnits() < 0;
-	}
-
 	void setClose(final MarketOrder closePrice) {
 		this.closePrice = closePrice;
 		closed = true;
@@ -135,5 +130,9 @@ public final class MarketOrder extends Order implements Cloneable {
 
 	void setTransactionLink(final int transactionLink) {
 		this.transactionLink = transactionLink;
+	}
+
+	boolean isClosed() {
+		return (getClose() != null);
 	}
 }
