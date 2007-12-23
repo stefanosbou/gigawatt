@@ -3,6 +3,7 @@ package com.dojoconsulting.oanda.fxtrade.api;
 import com.dojoconsulting.gigawatt.config.BackTestConfig;
 import com.dojoconsulting.gigawatt.core.Engine;
 import com.dojoconsulting.gigawatt.core.IMarketManager;
+import com.google.common.collect.Multimap;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -99,6 +100,10 @@ public class AccountTest extends TestCase {
 			public void close() {
 
 			}
+
+			public Multimap<FXPair, FXTick> getPerLoopTickTable() {
+				return null;
+			}
 		};
 
 		engine.setMarketManager(mockManager);
@@ -191,6 +196,10 @@ public class AccountTest extends TestCase {
 
 			public void close() {
 
+			}
+
+			public Multimap<FXPair, FXTick> getPerLoopTickTable() {
+				return null;
 			}
 		};
 

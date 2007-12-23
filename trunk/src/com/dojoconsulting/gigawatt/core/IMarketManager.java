@@ -1,6 +1,9 @@
 package com.dojoconsulting.gigawatt.core;
 
 import com.dojoconsulting.gigawatt.config.BackTestConfig;
+import com.dojoconsulting.oanda.fxtrade.api.FXPair;
+import com.dojoconsulting.oanda.fxtrade.api.FXTick;
+import com.google.common.collect.Multimap;
 
 import java.util.Map;
 
@@ -23,4 +26,6 @@ public interface IMarketManager {
 	void nextTick(long time);
 
 	void close();
+
+	Multimap<FXPair, FXTick> getPerLoopTickTable();
 }

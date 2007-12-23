@@ -13,4 +13,6 @@ public interface ITransactionManager {
 	void init(BackTestConfig config);
 
 	void close();
+
+	int getNextTransactionNumber();
 }
