@@ -1,7 +1,7 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.GigawattException;
-import com.dojoconsulting.gigawatt.core.fximpl.FXPairFlyweightFactory;
+import com.dojoconsulting.gigawatt.core.fximpl.domain.FXPairFlyweightFactory;
 
 import java.util.Map;
 
