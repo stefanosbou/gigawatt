@@ -1,7 +1,7 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.GigawattException;
-import com.dojoconsulting.gigawatt.core.fximpl.FXPairFlyweightFactory;
+import com.dojoconsulting.gigawatt.core.fximpl.domain.FXPairFlyweightFactory;
 import com.dojoconsulting.gigawatt.data.IProduct;
 
 import java.util.ArrayList;
@@ -45,6 +45,7 @@ public class FXPair implements Cloneable, IProduct {
 
 	public FXPair(final String pair) {
 		setPair(pair);
+		this.major = majors.contains(base) && majors.contains(quote);
 	}
 
 	public String toString() {
