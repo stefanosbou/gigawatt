@@ -38,7 +38,7 @@ public class FXAccountManager implements IAccountManager {
 			final List<AccountConfig> accountConfigs = u.getAccounts();
 			final List<Account> accountVector = new Vector<Account>();
 			for (final AccountConfig a : accountConfigs) {
-				final Account account = UtilAPI.createAccount(a.getId(), a.getBalance(), a.getCurrency(), a.getName(), a.getCreatedate().getTime(), a.getLeverage(), engine);
+				final Account account = UtilAPI.createAccount(a.getId(), a.getBalance(), a.getCurrency(), a.getName(), a.getCreatedate().getTime(), a.getLeverage(), a.getProcessType(), engine);
 				allAccounts.add(account);
 				accountVector.add(account);
 			}

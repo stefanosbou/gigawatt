@@ -4,20 +4,22 @@ import com.dojoconsulting.gigawatt.config.BackTestConfig;
 import com.dojoconsulting.gigawatt.core.IAccountManager;
 import com.dojoconsulting.gigawatt.core.IMarketManager;
 import com.dojoconsulting.gigawatt.core.ITradeManager;
+import com.dojoconsulting.gigawatt.core.fximpl.domain.TransactionType;
 import com.dojoconsulting.oanda.fxtrade.api.Account;
 import com.dojoconsulting.oanda.fxtrade.api.FXPair;
 import com.dojoconsulting.oanda.fxtrade.api.FXTick;
 import com.dojoconsulting.oanda.fxtrade.api.MarketOrder;
 import com.dojoconsulting.oanda.fxtrade.api.OAException;
 import com.dojoconsulting.oanda.fxtrade.api.UtilAPI;
+import com.dojoconsulting.oanda.fxtrade.api.UtilMath;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -57,12 +59,8 @@ public class FXTradeManager implements ITradeManager {
 
 	private Set<FXPair> refreshPairs;
 
-	private static int nextTicketNumber = 1;
 	private FXAccountManager accountManager;
-
-	public static int getNextTicketNumber() {
-		return nextTicketNumber++;
-	}
+	private DataSource dataSource;
 
 
 	public void setMarketManager(final IMarketManager marketManager) {
@@ -79,8 +77,8 @@ public class FXTradeManager implements ITradeManager {
 			orderMonitors = new HashMap<String, OrderMonitor>();
 			refreshPairs = new HashSet<FXPair>();
 
-			Class.forName("org.hsqldb.jdbcDriver");
-			Connection tradeDB = DriverManager.getConnection("jdbc:hsqldb:mem:tradeDB", "sa", "");
+			final Connection tradeDB = dataSource.getConnection();
+
 			final Statement st = tradeDB.createStatement();
 			final String expression = "CREATE TABLE trades ( tradeId INTEGER IDENTITY, accountId INTEGER, market CHAR(7), isLong BOOLEAN, stopLoss FLOAT, takeProfit FLOAT)";
 			st.executeUpdate(expression);
@@ -102,10 +100,6 @@ public class FXTradeManager implements ITradeManager {
 			tradeCount = tradeDB.prepareStatement("SELECT count(*) FROM trades");
 		}
 		catch (SQLException e) {
-			e.printStackTrace();  // Todoerror: Improve error handling
-			System.exit(1);
-		}
-		catch (ClassNotFoundException e) {
 			e.printStackTrace();  // Todoerror: Improve error handling
 			System.exit(1);
 		}
@@ -159,16 +153,13 @@ public class FXTradeManager implements ITradeManager {
 				}
 			}
 		}
-
-		// Todo: Check for Limit Orders achieved
-		// Todo: Check for Limit Orders expired
 	}
 
 	public void close() {
 		//Nothing to do. 
 	}
 
-	private void executeTakeProfits(String market, boolean isLong, double price) {
+	private void executeTakeProfits(final String market, final boolean isLong, final double price) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("FXTradeManager: Executing " + (isLong ? "long" : "short") + " take profits in " + market + " at " + price);
 		}
@@ -186,21 +177,21 @@ public class FXTradeManager implements ITradeManager {
 				rs = takeProfitTradesShort.executeQuery();
 			}
 
-			ListMultimap<Integer, MiniTradeResult> tradesToClose = new ArrayListMultimap<Integer, MiniTradeResult>();
+			final ListMultimap<Integer, MiniTradeResult> tradesToClose = new ArrayListMultimap<Integer, MiniTradeResult>();
 			while (rs.next()) {
-				MiniTradeResult tradeToClose = new MiniTradeResult();
+				final MiniTradeResult tradeToClose = new MiniTradeResult();
 				tradeToClose.transactionNumber = rs.getInt("tradeId");
 				tradeToClose.accountNumber = rs.getInt("accountId");
 				tradesToClose.put(tradeToClose.accountNumber, tradeToClose);
 			}
-			MarketOrder mo = new MarketOrder();
+			final MarketOrder mo = new MarketOrder();
 			final Set<Integer> tradesToCloseKeys = tradesToClose.keySet();
 			for (final int accountNumber : tradesToCloseKeys) {
 				final Account account = accountManager.getAccountWithId(accountNumber);
 				final List<MiniTradeResult> trades = tradesToClose.get(accountNumber);
 				for (final MiniTradeResult trade : trades) {
 					UtilAPI.setTransactionNumber(trade.transactionNumber, mo);
-					account.close(mo);
+					UtilAPI.closeTrade(account, mo, TransactionType.TAKE_PROFIT);
 				}
 			}
 			refreshOrderMonitor(market);
@@ -219,7 +210,7 @@ public class FXTradeManager implements ITradeManager {
 			logger.debug("FXTradeManager: Executing " + (isLong ? "long" : "short") + " stop losses in " + market + " at " + price);
 		}
 		try {
-			ResultSet rs;
+			final ResultSet rs;
 			if (isLong) {
 				stopLossTradesLong.clearParameters();
 				stopLossTradesLong.setString(1, market);
@@ -232,14 +223,14 @@ public class FXTradeManager implements ITradeManager {
 				rs = stopLossTradesShort.executeQuery();
 			}
 
-			ListMultimap<Integer, MiniTradeResult> tradesToClose = new ArrayListMultimap<Integer, MiniTradeResult>();
+			final ListMultimap<Integer, MiniTradeResult> tradesToClose = new ArrayListMultimap<Integer, MiniTradeResult>();
 			while (rs.next()) {
-				MiniTradeResult tradeToClose = new MiniTradeResult();
+				final MiniTradeResult tradeToClose = new MiniTradeResult();
 				tradeToClose.transactionNumber = rs.getInt("tradeId");
 				tradeToClose.accountNumber = rs.getInt("accountId");
 				tradesToClose.put(tradeToClose.accountNumber, tradeToClose);
 			}
-			MarketOrder mo = new MarketOrder();
+			final MarketOrder mo = new MarketOrder();
 			final Set<Integer> tradesToCloseKeys = tradesToClose.keySet();
 			for (final int accountNumber : tradesToCloseKeys) {
 				final Account account = accountManager.getAccountWithId(accountNumber);
@@ -261,7 +252,7 @@ public class FXTradeManager implements ITradeManager {
 
 	}
 
-	public void executeTrade(final MarketOrder trade, final Account account) {
+	public void executeTrade(final MarketOrder trade, final Account account, final TransactionType transactionType) {
 		try {
 			//INSERT INTO trades (tradeId, accountId, market, direction, stopLoss, takeProfit)
 			final boolean isLong = trade.getUnits() >= 0;
@@ -282,7 +273,7 @@ public class FXTradeManager implements ITradeManager {
 				rs.next();
 				final int numberOfRows = rs.getInt(1);
 				if (numberOfRows > 0) {
-					logger.debug("FXTradeManager:  " + numberOfRows + " rows currently in db");
+					logger.debug("FXTradeManager:  " + numberOfRows + " rows currently in trade db");
 				}
 			}
 		}
@@ -311,7 +302,7 @@ public class FXTradeManager implements ITradeManager {
 		}
 	}
 
-	public void closeTrade(final MarketOrder trade) {
+	public void closeTrade(final MarketOrder trade, final TransactionType transactionType) {
 		try {
 			// DELETE FROM trades WHERE tradeId = ?
 			final double stopLoss = trade.getStopLoss() == null ? 0 : trade.getStopLoss().getPrice();
@@ -320,8 +311,18 @@ public class FXTradeManager implements ITradeManager {
 			tradeClose.setInt(1, trade.getTransactionNumber());
 			tradeClose.execute();
 
-			if (stopLoss != 0 || takeProfit != 0) {
-				refreshPairs.add(trade.getPair());
+			if (transactionType != TransactionType.STOP_LOSS && transactionType != TransactionType.TAKE_PROFIT) {
+				if (stopLoss != 0 || takeProfit != 0) {
+					refreshPairs.add(trade.getPair());
+				}
+			}
+			if (logger.isDebugEnabled()) {
+				final ResultSet rs = tradeCount.executeQuery();
+				rs.next();
+				final int numberOfRows = rs.getInt(1);
+				if (numberOfRows > 0) {
+					logger.debug("FXTradeManager:  " + numberOfRows + " rows currently in trade db");
+				}
 			}
 		}
 		catch (SQLException e) {
@@ -334,13 +335,12 @@ public class FXTradeManager implements ITradeManager {
 		if (stopLoss == 0 && takeProfit == 0) {
 			return;
 		}
-		OrderMonitor orderMonitor = null;
+		final OrderMonitor orderMonitor;
 		// First trade in this market?
 		if (!orderMonitors.containsKey(market)) {
 			orderMonitor = new OrderMonitor(market);
 			orderMonitors.put(market, orderMonitor);
-		}
-		if (orderMonitor == null) {
+		} else {
 			orderMonitor = orderMonitors.get(market);
 		}
 		if (isLong) {
@@ -409,11 +409,18 @@ public class FXTradeManager implements ITradeManager {
 				shortTakeProfit = 0;
 			}
 
+			OrderMonitor orderMonitor = orderMonitors.get(pair);
 			if (longTakeProfit == 0 && longStopLoss == 0 && shortTakeProfit == 0 && shortStopLoss == 0) {
+				if (orderMonitor == null) {
+					return;
+				}
+				orderMonitor.longStopLoss = 0;
+				orderMonitor.longTakeProfit = 0;
+				orderMonitor.shortStopLoss = 0;
+				orderMonitor.shortTakeProfit = 0;
 				orderMonitors.remove(pair);
 				return;
 			}
-			OrderMonitor orderMonitor = orderMonitors.get(pair);
 			if (orderMonitor == null) {
 				orderMonitor = new OrderMonitor(pair);
 				orderMonitors.put(pair, orderMonitor);
@@ -434,6 +441,10 @@ public class FXTradeManager implements ITradeManager {
 
 	public void setAccountManager(final IAccountManager accountManager) {
 		this.accountManager = (FXAccountManager) accountManager;
+	}
+
+	public void setDataSource(final DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 
 	private class MiniTradeResult {
@@ -458,10 +469,10 @@ public class FXTradeManager implements ITradeManager {
 
 		public String toString() {
 			return "OrderMonitor [market=" + market + ", " +
-					"longStopLoss=" + longStopLoss + ", " +
-					"shortStopLoss=" + shortStopLoss + ", " +
-					"longTakeProfit=" + longTakeProfit + ", " +
-					"shortTakeProfit=" + shortTakeProfit + "]";
+					"longStopLoss=" + UtilMath.round(longStopLoss, 6) + ", " +
+					"shortStopLoss=" + UtilMath.round(shortStopLoss, 6) + ", " +
+					"longTakeProfit=" + UtilMath.round(longTakeProfit, 6) + ", " +
+					"shortTakeProfit=" + UtilMath.round(shortTakeProfit, 6) + "]";
 		}
 	}
 

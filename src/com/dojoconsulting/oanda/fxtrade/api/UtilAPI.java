@@ -1,6 +1,8 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.Engine;
+import com.dojoconsulting.gigawatt.core.fximpl.accountprocessor.AccountProcessorFactory;
+import com.dojoconsulting.gigawatt.core.fximpl.domain.TransactionType;
 
 import java.util.List;
 
@@ -17,8 +19,9 @@ public class UtilAPI {
 		return new User(userId, userName, password, name, address, telephone, email, createDate);
 	}
 
-	public static Account createAccount(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, final int leverage, final Engine engine) {
+	public static Account createAccount(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, final int leverage, final String processType, final Engine engine) {
 		final Account a = new Account(accountId, balance, homeCurrency, accountName, createDate, leverage);
+		a.setProcessor(AccountProcessorFactory.getProcessor(processType));
 		a.setEngine(engine);
 		return a;
 	}
@@ -45,6 +48,25 @@ public class UtilAPI {
 
 	public static FXHistoryPoint createStartingFXHistoryPoint(final long start, final FXTick tick) {
 		return new FXHistoryPoint(start, tick);
+	}
 
+	public static void closeTrade(final Account account, final MarketOrder mo, final TransactionType transactionType) throws OAException {
+		account.close(mo, transactionType);
+	}
+
+	public static void setTransactionNumber(final int transactionNumber, final LimitOrder limitOrder) {
+		limitOrder.setTransactionNumber(transactionNumber);
+	}
+
+	public static boolean validateOrderPurchase(final Account account, final LimitOrder limitOrder) throws AccountException {
+		return account.validatePurchase(limitOrder);
+	}
+
+	public static void executeOrder(final Account account, final LimitOrder lo, final TransactionType transactionType) throws OAException {
+		account.executeOrder(lo, transactionType);
+	}
+
+	public static void setOrderClosed(final LimitOrder lo, final Account account) {
+		account.orderClosed(lo);
 	}
 }
