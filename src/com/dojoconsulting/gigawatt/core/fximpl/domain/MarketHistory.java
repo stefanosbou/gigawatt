@@ -1,4 +1,4 @@
-package com.dojoconsulting.gigawatt.core.fximpl;
+package com.dojoconsulting.gigawatt.core.fximpl.domain;
 
 import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.data.ITick;

@@ -4,6 +4,7 @@ import com.dojoconsulting.gigawatt.config.BackTestConfig;
 import com.dojoconsulting.gigawatt.config.MarketConfig;
 import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.core.IHistoryManager;
+import com.dojoconsulting.gigawatt.core.fximpl.domain.MarketHistory;
 import com.dojoconsulting.gigawatt.data.ITick;
 import com.dojoconsulting.oanda.fxtrade.api.FXPair;
 

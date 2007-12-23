@@ -1,4 +1,4 @@
-package com.dojoconsulting.gigawatt.core.fximpl;
+package com.dojoconsulting.gigawatt.core.fximpl.domain;
 
 import com.dojoconsulting.oanda.fxtrade.api.FXClient;
 import com.dojoconsulting.oanda.fxtrade.api.FXHistoryPoint;
