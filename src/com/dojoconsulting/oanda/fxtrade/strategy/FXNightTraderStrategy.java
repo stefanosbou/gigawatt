@@ -66,7 +66,7 @@ public class FXNightTraderStrategy implements IStrategy {
 					return;
 				}
 			}
-			long units = (long) (account.getBalance() * 50 / 1000);
+			long units = (long) (account.getBalance() * 50 / 100);
 			if (!goLong) {
 				units *= -1;
 			}
