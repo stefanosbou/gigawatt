@@ -61,7 +61,7 @@ public class BuyAndHoldStrategy implements IStrategy {
 				final Date date = new Date(client.getServerTime());
 				final String strDate = DateFormat.getDateInstance().format(date);
 
-				final String message = strDate + ": Bought " + units + " units at " + tick.getBid();
+				final String message = strDate + ": Bought " + units + " units at " + tick.getAsk();
 				logger.info(message);
 			}
 		}
