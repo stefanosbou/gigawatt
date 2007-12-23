@@ -19,6 +19,7 @@ import java.util.List;
  */
 public class BackTestConfig {
 	private Date startdate;
+	private Date enddate;
 	private String engine;
 	private int increment;
 	private List<UserConfig> users;
@@ -44,6 +45,7 @@ public class BackTestConfig {
 			xstream.alias("strategy", String.class);
 			xstream.useAttributeFor("engine", String.class);
 			xstream.useAttributeFor("id", Integer.class);
+			xstream.useAttributeFor("processType", String.class);
 			xstream.useAttributeFor("product", String.class);
 			xstream.useAttributeFor("keepHistory", Boolean.class);
 
@@ -64,6 +66,14 @@ public class BackTestConfig {
 
 	public void setStartdate(final Date startdate) {
 		this.startdate = startdate;
+	}
+
+	public Date getEnddate() {
+		return enddate;
+	}
+
+	public void setEnddate(final Date enddate) {
+		this.enddate = enddate;
 	}
 
 	public int getIncrement() {

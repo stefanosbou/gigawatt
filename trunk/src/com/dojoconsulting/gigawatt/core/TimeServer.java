@@ -3,7 +3,6 @@
  * User: Amit Chada
  * Date: 17-Oct-2007
  * Time: 03:45:28
- * To change this template use File | Settings | File Templates.
  */
 package com.dojoconsulting.gigawatt.core;
 
@@ -16,8 +15,15 @@ public class TimeServer {
 	private static TimeServer instance = new TimeServer();
 	private static int TIME_INCREMENT;
 	private String startDateAsString;
+	private String endDateAsString;
 	private long startDateAsMillis;
+	private long endDateAsMillis;
 	private Date startDate;
+	private Date endDate;
+
+	private boolean processEndDate;
+
+	private Engine engine;
 
 	public static TimeServer getInstance() {
 		return instance;
@@ -28,11 +34,24 @@ public class TimeServer {
 
 	private long currentTimeInMillis;
 
-	void init(final BackTestConfig config) {
+	void init(final BackTestConfig config, final Engine engine) {
+		this.engine = engine;
 		startDate = config.getStartdate();
-		startDateAsString = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(startDate);
+		endDate = config.getEnddate();
+		startDateAsString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startDate);
 		currentTimeInMillis = startDate.getTime();
 		startDateAsMillis = currentTimeInMillis;
+
+		if (endDate != null) {
+			endDateAsString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endDate);
+			endDateAsMillis = endDate.getTime();
+			processEndDate = true;
+		} else {
+			endDateAsString = "";
+			endDateAsMillis = 0;
+			processEndDate = false;
+		}
+
 		TIME_INCREMENT = config.getIncrement();
 	}
 
@@ -42,11 +61,20 @@ public class TimeServer {
 
 	public long processNextLoop() {
 		currentTimeInMillis += TIME_INCREMENT;
+		if (processEndDate) {
+			if (currentTimeInMillis > endDateAsMillis) {
+				engine.stop();
+			}
+		}
 		return currentTimeInMillis;
 	}
 
 	public String getStartDateAsString() {
 		return startDateAsString;
+	}
+
+	public String getEndDateAsString() {
+		return endDateAsString;
 	}
 
 	public boolean isBeforeStart(final long millis) {
@@ -55,5 +83,21 @@ public class TimeServer {
 
 	public boolean isAfterStart(final long millis) {
 		return millis > startDateAsMillis;
+	}
+
+	public long getTimeSinceStart() {
+		return currentTimeInMillis - startDateAsMillis;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public long getEndDateAsMillis() {
+		return endDateAsMillis;
 	}
 }
