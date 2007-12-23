@@ -9,58 +9,67 @@ import java.util.Date;
  * Time: 03:09:20
  */
 public class AccountConfig {
-    private int id;
-    private String name;
-    private double balance;
-    private Date createdate;
-    private String currency;
-    private int leverage;
+	private int id;
+	private String name;
+	private double balance;
+	private Date createdate;
+	private String currency;
+	private int leverage;
+	private String processType = "";
 
-    public int getId() {
-        return id;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public void setId(final int id) {
-        this.id = id;
-    }
+	public void setId(final int id) {
+		this.id = id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getProcessType() {
+		return processType;
+	}
 
-    public void setName(final String name) {
-        this.name = name;
-    }
+	public void setProcessType(final String processType) {
+		this.processType = processType;
+	}
 
-    public double getBalance() {
-        return balance;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setBalance(final double balance) {
-        this.balance = balance;
-    }
+	public void setName(final String name) {
+		this.name = name;
+	}
 
-    public Date getCreatedate() {
-        return createdate;
-    }
+	public double getBalance() {
+		return balance;
+	}
 
-    public void setCreatedate(final Date createdate) {
-        this.createdate = createdate;
-    }
+	public void setBalance(final double balance) {
+		this.balance = balance;
+	}
 
-    public String getCurrency() {
-        return currency;
-    }
+	public Date getCreatedate() {
+		return createdate;
+	}
 
-    public void setCurrency(final String currency) {
-        this.currency = currency;
-    }
+	public void setCreatedate(final Date createdate) {
+		this.createdate = createdate;
+	}
 
-    public int getLeverage() {
-        return leverage;
-    }
+	public String getCurrency() {
+		return currency;
+	}
 
-    public void setLeverage(final int leverage) {
-        this.leverage = leverage;
-    }
+	public void setCurrency(final String currency) {
+		this.currency = currency;
+	}
+
+	public int getLeverage() {
+		return leverage;
+	}
+
+	public void setLeverage(final int leverage) {
+		this.leverage = leverage;
+	}
 }

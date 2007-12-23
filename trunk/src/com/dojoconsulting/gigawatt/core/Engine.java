@@ -22,6 +22,7 @@ public class Engine {
 	private IHistoryManager historyManager;
 	private IInterestRateManager interestRateManager;
 	private ITransactionManager transactionManager;
+	private IOrderManager orderManager;
 
 	private Log log = LogFactory.getLog(Engine.class);
 
@@ -32,8 +33,13 @@ public class Engine {
 		final BackTestConfig config = BackTestConfig.load();
 
 		final TimeServer timeServer = TimeServer.getInstance();
-		timeServer.init(config);
+		timeServer.init(config, this);
 		log.info("Start date is: " + timeServer.getStartDateAsString() + " (" + timeServer.getTime() + ")");
+		if (timeServer.getEndDate() == null) {
+			log.info("End date is not specified.  Will continue until all ticks are processed.");
+		} else {
+			log.info("End date is: " + timeServer.getEndDateAsString() + " (" + timeServer.getEndDateAsMillis() + ")");
+		}
 
 		// UserManager must go before AccountManager
 		userManager.init(config);
@@ -45,6 +51,7 @@ public class Engine {
 		historyManager.init(config);
 		interestRateManager.init(config);
 		transactionManager.init(config);
+		orderManager.init(config);
 
 		// Strategy must go last
 		strategyManager.init(config);
@@ -71,6 +78,7 @@ public class Engine {
 
 			// pre Tick process
 			tradeManager.preTickProcess();
+			orderManager.preTickProcess();
 
 			// update Ticks
 			final long currentTime = timeServer.processNextLoop();
@@ -78,6 +86,7 @@ public class Engine {
 
 			//post Tick process
 			tradeManager.postTickProcess();
+			orderManager.postTickProcess();
 			accountManager.postTickProcess();
 			strategyManager.postTickProcess();
 		}
@@ -95,6 +104,7 @@ public class Engine {
 		accountManager.close();
 		userManager.close();
 		tradeManager.close();
+		orderManager.close();
 		//TODO: is int rate manager close needed?
 		interestRateManager.close();
 		strategyManager.close();
@@ -123,6 +133,10 @@ public class Engine {
 	}
 
 	/* Spring beans */
+	public void setOrderManager(final IOrderManager orderManager) {
+		this.orderManager = orderManager;
+	}
+
 	public void setTradeManager(final ITradeManager tradeManager) {
 		this.tradeManager = tradeManager;
 	}
@@ -183,6 +197,13 @@ public class Engine {
 		return interestRateManager;
 	}
 
+	public ITransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	public IOrderManager getOrderManager() {
+		return orderManager;
+	}
 	/* End of Spring beans */
 
 }

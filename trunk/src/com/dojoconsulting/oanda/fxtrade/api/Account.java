@@ -1,8 +1,13 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.Engine;
+import com.dojoconsulting.gigawatt.core.GigawattException;
+import com.dojoconsulting.gigawatt.core.IOrderManager;
+import com.dojoconsulting.gigawatt.core.ITradeManager;
+import com.dojoconsulting.gigawatt.core.ITransactionManager;
 import com.dojoconsulting.gigawatt.core.NotImplementedException;
-import com.dojoconsulting.gigawatt.core.fximpl.FXTradeManager;
+import com.dojoconsulting.gigawatt.core.fximpl.accountprocessor.IAccountProcessorStrategy;
+import com.dojoconsulting.gigawatt.core.fximpl.domain.TransactionType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -20,7 +25,7 @@ import java.util.Map;
  */
 public final class Account {
 
-	private Log logger = LogFactory.getLog(FXTradeManager.class);
+	private Log logger = LogFactory.getLog(Account.class);
 
 	private int accountId;
 	private double balance;
@@ -37,7 +42,11 @@ public final class Account {
 	private double realizedPL;
 	private int leverage;
 	private Engine engine;
-	private FXTradeManager tradeManager;
+	private ITradeManager tradeManager;
+	private ITransactionManager transactionManager;
+	private IOrderManager orderManager;
+
+	private IAccountProcessorStrategy accountProcessorStrategy;
 
 	private FXEventManager eventManager = new FXEventManager() {
 		@SuppressWarnings("unchecked")
@@ -56,7 +65,9 @@ public final class Account {
 
 	void setEngine(final Engine engine) {
 		this.engine = engine;
-		tradeManager = (FXTradeManager) engine.getTradeManager();
+		tradeManager = engine.getTradeManager();
+		transactionManager = engine.getTransactionManager();
+		orderManager = engine.getOrderManager();
 	}
 
 	Account(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, final int leverage) {
@@ -77,13 +88,17 @@ public final class Account {
 	}
 
 	public void close(final MarketOrder mo) throws OAException {
+		close(mo, TransactionType.USER);
+	}
+
+	void close(final MarketOrder mo, final TransactionType transactionType) throws OAException {
 		final int transactionNumber = mo.getTransactionNumber();
 		final MarketOrder closeTrade = internalGetTradeWithId(transactionNumber);
 		if (closeTrade == null) {
 			throw new OAException("Invalid MarketOrder " + transactionNumber);
 		}
-		logger.debug("Account: Closing trade " + transactionNumber + " in " + closeTrade.getPair().getPair());
-		closeTrade(closeTrade);
+		logger.debug("Account: Closing (" + transactionType + ") trade " + transactionNumber + " in " + closeTrade.getPair().getPair());
+		closeTrade(closeTrade, transactionType);
 		final Position position = positions.get(closeTrade.getPair());
 		position.closeTrade(closeTrade);
 		if (position.getTrades().size() == 0) {
@@ -93,16 +108,26 @@ public final class Account {
 		trades.remove(closeTrade);
 	}
 
-	private void closeTrade(final MarketOrder closeTrade) {
+	private void closeTrade(final MarketOrder closeTrade, final TransactionType transactionType) {
 		final Map tickTable = engine.getMarketManager().getTickTable();
 		final FXTick tick = (FXTick) tickTable.get(closeTrade.getPair());
 		final MarketOrder close = new MarketOrder();
-		if (closeTrade.isLong()) {
-			close.setPrice(tick.getBid());
+		final double price;
+		if (transactionType == TransactionType.USER || transactionType == TransactionType.MARGIN_CALL) {
+			if (closeTrade.isLong()) {
+				price = tick.getBid();
+			} else {
+				price = tick.getAsk();
+			}
+		} else if (transactionType == TransactionType.STOP_LOSS) {
+			price = closeTrade.getStopLoss().getPrice();
+		} else if (transactionType == TransactionType.TAKE_PROFIT) {
+			price = closeTrade.getTakeProfit().getPrice();
 		} else {
-			close.setPrice(tick.getAsk());
+			throw new GigawattException("Unknown TransactionType on closeTrade().  Please yell at Mojo.");
 		}
-		UtilAPI.closeTrade(closeTrade, close);
+		close.setPrice(price);
+		closeTrade.setClose(close);
 
 		// balance adjustment
 		final double profitInQuoteCurrency = closeTrade.getRealizedPL();
@@ -117,7 +142,7 @@ public final class Account {
 		balance += profitInHomeCurrency;
 		realizedPL += profitInHomeCurrency;
 
-		tradeManager.closeTrade(closeTrade);
+		tradeManager.closeTrade(closeTrade, transactionType);
 		closedTrades.add(closeTrade);
 		// todo: add transaction
 		// todo: interest calc
@@ -133,7 +158,7 @@ public final class Account {
 		final int size = positionTrades.size();
 		for (int i = 0; i < size; i++) {
 			final MarketOrder closeTrade = positionTrades.get(i);
-			closeTrade(closeTrade);
+			closeTrade(closeTrade, TransactionType.USER);
 			trades.remove(closeTrade);
 		}
 		thePosition.close();
@@ -141,18 +166,13 @@ public final class Account {
 	}
 
 	public void modify(final MarketOrder mo) throws OAException {
-		MarketOrder modifyTrade = null;
-		final long transactionNumber = mo.getTransactionNumber();
-		final int size = trades.size();
-		for (int i = 0; i < size; i++) {
-			final MarketOrder trade = trades.get(i);
-			if (trade.getTransactionNumber() == transactionNumber) {
-				modifyTrade = trade;
-				break;
-			}
-		}
+		final int transactionNumber = mo.getTransactionNumber();
+		final MarketOrder modifyTrade = internalGetTradeWithId(transactionNumber);
 		if (modifyTrade == null) {
 			throw new OAException("Invalid MarketOrder " + transactionNumber);
+		}
+		if (modifyTrade.isClosed()) {
+			throw new OAException("MarketOrder " + transactionNumber + " is closed.");
 		}
 		mo.setPrice(modifyTrade.getPrice());
 		mo.validateOrders();
@@ -162,17 +182,69 @@ public final class Account {
 	}
 
 	public void modify(final LimitOrder lo) throws OAException {
-		//TODO: Implement modify(LimitOrder)
+		final int transactionNumber = lo.getTransactionNumber();
+		final LimitOrder modifyOrder = internalGetOrderWithId(transactionNumber);
+		if (modifyOrder == null) {
+			throw new OAException("Invalid LimitOrder " + transactionNumber);
+		}
+		if (modifyOrder.isClosed()) {
+			throw new OAException("LimitOrder " + transactionNumber + " is closed.");
+		}
+		lo.validate();
+		orderManager.modifyOrder(lo);
+		modifyOrder.setStopLoss(lo.getStopLoss());
+		modifyOrder.setTakeProfit(lo.getTakeProfit());
+		modifyOrder.setPrice(lo.getPrice());
+		modifyOrder.setUnits(lo.getUnits());
+		modifyOrder.setExpiry(lo.getExpiry());
 	}
 
 	public void execute(final LimitOrder lo) throws OAException {
-		//TODO: Implement execute(LimitOrder)
+		final FXPair pair = lo.getPair();
+		final Map tickTable = engine.getMarketManager().getTickTable();
+		final FXTick tick = (FXTick) tickTable.get(pair);
 
+		if (pair == null) {
+			throw new OAException("No pair specified on Limit Order");
+		}
+		lo.validate();
+
+		final int transactionNumber = transactionManager.getNextTransactionNumber();
+		lo.setTransactionNumber(transactionNumber);
+
+		final boolean isAbovePrice;
+		if (lo.isLong()) {
+			isAbovePrice = lo.getPrice() > tick.getBid();
+		} else {
+			isAbovePrice = tick.getAsk() < lo.getPrice();
+		}
+
+
+		orderManager.executeOrder(lo, isAbovePrice, this);
+		final LimitOrder newOrder = (LimitOrder) lo.clone();
+		orders.add(newOrder);
 	}
 
 	public void close(final LimitOrder lo) throws OAException {
-		//TODO: Implement close(LimitOrder)
+		final int transactionNumber = lo.getTransactionNumber();
+		final LimitOrder closeOrder = internalGetOrderWithId(transactionNumber);
+		if (closeOrder == null) {
+			throw new OAException("Invalid MarketOrder " + transactionNumber);
+		}
+		logger.debug("Account: Closing trade " + transactionNumber + " in " + closeOrder.getPair().getPair());
+		orderManager.closeOrder(closeOrder, TransactionType.USER);
+		orders.remove(closeOrder);
+	}
 
+	void executeOrder(final LimitOrder lo, final TransactionType transactionType) throws OAException {
+		final LimitOrder limitOrder = internalGetOrderWithId(lo.getTransactionNumber());
+		final MarketOrder mo = new MarketOrder();
+		mo.setPair(limitOrder.getPair());
+		mo.setStopLoss(limitOrder.getStopLoss());
+		mo.setTakeProfit(limitOrder.getTakeProfit());
+		mo.setUnits(limitOrder.getUnits());
+		mo.setPrice(limitOrder.getPrice());
+		execute(mo, transactionType);
 	}
 
 	public void execute(final MarketOrder mo) throws OAException {
@@ -181,14 +253,18 @@ public final class Account {
 		final FXPair pair = mo.getPair();
 		final FXTick tick = (FXTick) tickTable.get(pair);
 		mo.validate(tick);
+		execute(mo, TransactionType.USER);
+	}
 
+	public void execute(final MarketOrder mo, final TransactionType transactionType) throws OAException {
+		final FXPair pair = mo.getPair();
 		if (!validatePurchase(mo)) {
-			throw new AccountException("Insufficent funds.");
+			throw new NSFException("Insufficent funds.");
 		}
-		final int transactionNumber = FXTradeManager.getNextTicketNumber();
+		final int transactionNumber = transactionManager.getNextTransactionNumber();
 		mo.setTransactionNumber(transactionNumber);
 
-		tradeManager.executeTrade(mo, this);
+		tradeManager.executeTrade(mo, this, transactionType);
 		final MarketOrder newOrder = (MarketOrder) mo.clone();
 		trades.add(newOrder);
 
@@ -202,11 +278,17 @@ public final class Account {
 		//TODO: Implement execute(MarketOrder) properly (still needs to check for reversal)
 	}
 
-	public boolean validatePurchase(final MarketOrder mo) throws AccountException {
+	private boolean validatePurchase(final MarketOrder mo) throws AccountException {
 		final double marginRequired = getMarginRequiredForTrade(mo);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Margin Required " + marginRequired);
 		}
+		return marginRequired <= getMarginAvailable();
+	}
+
+	boolean validatePurchase(final LimitOrder lo) throws AccountException {
+		final LimitOrder limitOrder = internalGetOrderWithId(lo.getTransactionNumber());
+		final double marginRequired = getMarginRequiredForTrade(limitOrder);
 		return marginRequired <= getMarginAvailable();
 	}
 
@@ -282,6 +364,15 @@ public final class Account {
 		return null;
 	}
 
+	private LimitOrder internalGetOrderWithId(final int transactionNumber) {
+		for (final LimitOrder order : orders) {
+			if (order.getTransactionNumber() == transactionNumber) {
+				return order;
+			}
+		}
+		return null;
+	}
+
 	private MarketOrder internalGetTradeWithId(final int transactionNumber) {
 		for (final MarketOrder trade : trades) {
 			if (trade.getTransactionNumber() == transactionNumber) {
@@ -308,7 +399,6 @@ public final class Account {
 		}
 		return null;
 	}
-
 
 	public long getCreateDate() {
 		return createDate;
@@ -354,7 +444,7 @@ public final class Account {
 		return totalMarginUsed;
 	}
 
-	private double getMarginRequiredForTrade(final MarketOrder mo) throws AccountException {
+	private double getMarginRequiredForTrade(final Order mo) throws AccountException {
 		final Map tickTable = engine.getMarketManager().getTickTable();
 
 		final long units = mo.getUnits();
@@ -411,18 +501,17 @@ public final class Account {
 	void process() {
 		try {
 			if (engine.getMarketManager().newTicksThisLoop() && trades.size() > 0) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Current NAV/Balance: " + getNetAssetValue() + " " + getBalance());
-				}
-				if (getNetAssetValue() <= getMarginCallRate()) {
-					logger.info("Margin Call on Account: " + accountId);
-					final int size = trades.size();
-					for (int i = 0; i < size; i++) {
-						final MarketOrder trade = trades.get(i);
-						closeTrade(trade);
+				if (accountProcessorStrategy.requiresMarginCall()) {
+					if (getNetAssetValue() <= getMarginCallRate()) {
+						logger.info("Margin Call on Account: " + accountId);
+						final int size = trades.size();
+						for (int i = 0; i < size; i++) {
+							final MarketOrder trade = trades.get(i);
+							closeTrade(trade, TransactionType.MARGIN_CALL);
+						}
+						trades.clear();
+						positions.clear();
 					}
-					trades.clear();
-					positions.clear();
 				}
 			}
 		} catch (AccountException e) {
@@ -438,4 +527,12 @@ public final class Account {
 		return leverage;
 	}
 
+	void setProcessor(final IAccountProcessorStrategy processor) {
+		this.accountProcessorStrategy = processor;
+	}
+
+	void orderClosed(final LimitOrder lo) {
+		final LimitOrder limitOrder = internalGetOrderWithId(lo.getTransactionNumber());
+		limitOrder.setClosed(true);
+	}
 }
