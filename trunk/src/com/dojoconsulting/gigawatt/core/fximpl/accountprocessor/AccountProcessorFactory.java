@@ -22,10 +22,10 @@ public class AccountProcessorFactory {
 	}
 
 	public static IAccountProcessorStrategy getProcessor(final String processType) {
-		if (processType.equals("NEVER")) {
+		if (processType.equalsIgnoreCase("NEVER")) {
 			return (IAccountProcessorStrategy) beanFactory.getBean("neverAccountProcessor");
 		}
-		if (processType.equals("DAILY")) {
+		if (processType.equalsIgnoreCase("DAILY")) {
 			return (IAccountProcessorStrategy) beanFactory.getBean("dailyAccountProcessor");
 		}
 		return (IAccountProcessorStrategy) beanFactory.getBean("fullAccountProcessor");
