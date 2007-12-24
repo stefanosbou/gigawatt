@@ -81,7 +81,7 @@ public class FXTradeManager implements ITradeManager {
 
 			final Statement st = tradeDB.createStatement();
 
-			st.executeUpdate("DROP TABLE trades");
+			st.executeUpdate("DROP TABLE trades IF EXISTS");
 			final String expression = "CREATE TABLE trades ( tradeId INTEGER IDENTITY, accountId INTEGER, market CHAR(7), isLong BOOLEAN, stopLoss FLOAT, takeProfit FLOAT)";
 			st.executeUpdate(expression);
 			st.close();
