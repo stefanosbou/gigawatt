@@ -75,8 +75,6 @@ public class FXMarketManager implements IMarketManager {
 		catch (NoSuchMethodException e) {
 			throw new GigawattException("FXMarketManager: There was a problem instantiating " + className + ".  Please ensure you have a public constructor with signature of (FXPair pair, String dataFileName).", e);
 		}
-
-		timeServer = TimeServer.getInstance();
 	}
 
 	public boolean newTicksThisLoop() {
@@ -125,5 +123,9 @@ public class FXMarketManager implements IMarketManager {
 
 	public void setHistoryManager(final IHistoryManager historyManager) {
 		this.historyManager = historyManager;
+	}
+
+	public void setTimeServer(final TimeServer timeServer) {
+		this.timeServer = timeServer;
 	}
 }

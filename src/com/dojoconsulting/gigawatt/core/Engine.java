@@ -29,10 +29,11 @@ public class Engine {
 	private boolean running;
 	private long logStartTime;
 
+	private TimeServer timeServer;
+
 	public void init() {
 		final BackTestConfig config = BackTestConfig.load();
 
-		final TimeServer timeServer = TimeServer.getInstance();
 		timeServer.init(config, this);
 		log.info("Start date is: " + timeServer.getStartDateAsString() + " (" + timeServer.getTime() + ")");
 		if (timeServer.getEndDate() == null) {
@@ -73,7 +74,6 @@ public class Engine {
 	private void loop() {
 		started();
 		running = true;
-		final TimeServer timeServer = TimeServer.getInstance();
 		while (marketManager.hasMoreTicks() && running) {
 
 			// pre Tick process
@@ -133,6 +133,11 @@ public class Engine {
 	}
 
 	/* Spring beans */
+
+	public void setTimeServer(final TimeServer timeServer) {
+		this.timeServer = timeServer;
+	}
+
 	public void setOrderManager(final IOrderManager orderManager) {
 		this.orderManager = orderManager;
 	}
@@ -167,6 +172,10 @@ public class Engine {
 
 	public void setTransactionManager(final ITransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
+	}
+
+	public TimeServer getTimeServer() {
+		return timeServer;
 	}
 
 	public IMarketManager getMarketManager() {

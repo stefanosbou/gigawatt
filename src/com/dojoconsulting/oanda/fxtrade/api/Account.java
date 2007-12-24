@@ -2,10 +2,12 @@ package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.Engine;
 import com.dojoconsulting.gigawatt.core.GigawattException;
+import com.dojoconsulting.gigawatt.core.IMarketManager;
 import com.dojoconsulting.gigawatt.core.IOrderManager;
 import com.dojoconsulting.gigawatt.core.ITradeManager;
 import com.dojoconsulting.gigawatt.core.ITransactionManager;
 import com.dojoconsulting.gigawatt.core.NotImplementedException;
+import com.dojoconsulting.gigawatt.core.TimeServer;
 import com.dojoconsulting.gigawatt.core.fximpl.accountprocessor.IAccountProcessorStrategy;
 import com.dojoconsulting.gigawatt.core.fximpl.domain.TransactionType;
 import org.apache.commons.logging.Log;
@@ -41,10 +43,11 @@ public final class Account {
 
 	private double realizedPL;
 	private int leverage;
-	private Engine engine;
 	private ITradeManager tradeManager;
 	private ITransactionManager transactionManager;
 	private IOrderManager orderManager;
+	private TimeServer timeServer;
+	private IMarketManager marketManager;
 
 	private IAccountProcessorStrategy accountProcessorStrategy;
 
@@ -64,7 +67,8 @@ public final class Account {
 	};
 
 	void setEngine(final Engine engine) {
-		this.engine = engine;
+		marketManager = engine.getMarketManager();
+		timeServer = engine.getTimeServer();
 		tradeManager = engine.getTradeManager();
 		transactionManager = engine.getTransactionManager();
 		orderManager = engine.getOrderManager();
@@ -109,7 +113,7 @@ public final class Account {
 	}
 
 	private void closeTrade(final MarketOrder closeTrade, final TransactionType transactionType) {
-		final Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = marketManager.getTickTable();
 		final FXTick tick = (FXTick) tickTable.get(closeTrade.getPair());
 		final MarketOrder close = new MarketOrder();
 		final double price;
@@ -190,7 +194,7 @@ public final class Account {
 		if (modifyOrder.isClosed()) {
 			throw new OAException("LimitOrder " + transactionNumber + " is closed.");
 		}
-		lo.validate();
+		lo.validate(timeServer.getTime());
 		orderManager.modifyOrder(lo);
 		modifyOrder.setStopLoss(lo.getStopLoss());
 		modifyOrder.setTakeProfit(lo.getTakeProfit());
@@ -201,13 +205,13 @@ public final class Account {
 
 	public void execute(final LimitOrder lo) throws OAException {
 		final FXPair pair = lo.getPair();
-		final Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = marketManager.getTickTable();
 		final FXTick tick = (FXTick) tickTable.get(pair);
 
 		if (pair == null) {
 			throw new OAException("No pair specified on Limit Order");
 		}
-		lo.validate();
+		lo.validate(timeServer.getTime());
 
 		final int transactionNumber = transactionManager.getNextTransactionNumber();
 		lo.setTransactionNumber(transactionNumber);
@@ -248,7 +252,7 @@ public final class Account {
 	}
 
 	public void execute(final MarketOrder mo) throws OAException {
-		final Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = marketManager.getTickTable();
 
 		final FXPair pair = mo.getPair();
 		final FXTick tick = (FXTick) tickTable.get(pair);
@@ -322,7 +326,7 @@ public final class Account {
 	}
 
 	public double getPositionValue() throws AccountException {
-		final Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = marketManager.getTickTable();
 
 		double totalPositionValue = 0;
 		final int size = trades.size();
@@ -338,7 +342,7 @@ public final class Account {
 	}
 
 	public double getUnrealizedPL() throws AccountException {
-		final Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = marketManager.getTickTable();
 		int value = 0;
 
 		final Collection<Position> positionValues = positions.values();
@@ -427,7 +431,7 @@ public final class Account {
 	}
 
 	public double getMarginUsed() throws AccountException {
-		final Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = marketManager.getTickTable();
 
 		double totalMarginUsed = 0;
 		final int size = trades.size();
@@ -445,7 +449,7 @@ public final class Account {
 	}
 
 	private double getMarginRequiredForTrade(final Order mo) throws AccountException {
-		final Map tickTable = engine.getMarketManager().getTickTable();
+		final Map tickTable = marketManager.getTickTable();
 
 		final long units = mo.getUnits();
 		final FXPair pair = mo.getPair();
@@ -500,7 +504,7 @@ public final class Account {
 
 	void process() {
 		try {
-			if (engine.getMarketManager().newTicksThisLoop() && trades.size() > 0) {
+			if (marketManager.newTicksThisLoop() && trades.size() > 0) {
 				if (accountProcessorStrategy.requiresMarginCall()) {
 					if (getNetAssetValue() <= getMarginCallRate()) {
 						logger.info("Margin Call on Account: " + accountId);

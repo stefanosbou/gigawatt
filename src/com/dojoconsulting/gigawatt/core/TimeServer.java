@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class TimeServer {
-	private static TimeServer instance = new TimeServer();
 	private static int TIME_INCREMENT;
 	private String startDateAsString;
 	private String endDateAsString;
@@ -25,11 +24,7 @@ public class TimeServer {
 
 	private Engine engine;
 
-	public static TimeServer getInstance() {
-		return instance;
-	}
-
-	private TimeServer() {
+	public TimeServer() {
 	}
 
 	private long currentTimeInMillis;

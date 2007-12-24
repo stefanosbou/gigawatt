@@ -3,7 +3,6 @@ package com.dojoconsulting.oanda.fxtrade.api;
 import com.dojoconsulting.gigawatt.core.Engine;
 import com.dojoconsulting.gigawatt.core.GigawattException;
 import com.dojoconsulting.gigawatt.core.NotImplementedException;
-import com.dojoconsulting.gigawatt.core.TimeServer;
 import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
 import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
@@ -72,7 +71,7 @@ public abstract class FXClient extends Observable {
 	}
 
 	public long getServerTime() {
-		return TimeServer.getInstance().getTime();
+		return engine.getTimeServer().getTime();
 	}
 
 	public User getUser() throws SessionException {
