@@ -274,9 +274,7 @@ public class FXTradeManager implements ITradeManager {
 				final ResultSet rs = tradeCount.executeQuery();
 				rs.next();
 				final int numberOfRows = rs.getInt(1);
-				if (numberOfRows > 0) {
-					logger.debug("FXTradeManager:  " + numberOfRows + " rows currently in trade db");
-				}
+				logger.debug("FXTradeManager:  " + numberOfRows + " rows currently in trade db");
 			}
 		}
 		catch (SQLException e) {
@@ -322,9 +320,7 @@ public class FXTradeManager implements ITradeManager {
 				final ResultSet rs = tradeCount.executeQuery();
 				rs.next();
 				final int numberOfRows = rs.getInt(1);
-				if (numberOfRows > 0) {
-					logger.debug("FXTradeManager:  " + numberOfRows + " rows currently in trade db");
-				}
+				logger.debug("FXTradeManager:  " + numberOfRows + " rows currently in trade db");
 			}
 		}
 		catch (SQLException e) {

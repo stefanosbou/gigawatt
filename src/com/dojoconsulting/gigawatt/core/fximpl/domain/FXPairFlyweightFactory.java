@@ -29,7 +29,7 @@ public class FXPairFlyweightFactory {
 		return getPair(base + "/" + quote);
 	}
 
-	private FXPair getPair(final String pair) {
+	public FXPair getPair(final String pair) {
 		FXPair fxPair = factory.get(pair);
 		if (fxPair == null) {
 			fxPair = new FXPair(pair);

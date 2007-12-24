@@ -4,6 +4,9 @@ import com.dojoconsulting.gigawatt.config.BackTestConfig;
 import com.dojoconsulting.gigawatt.core.IAccountManager;
 import com.dojoconsulting.gigawatt.core.IMarketManager;
 import com.dojoconsulting.gigawatt.core.IOrderManager;
+import com.dojoconsulting.gigawatt.core.TimeEvent;
+import com.dojoconsulting.gigawatt.core.TimeServer;
+import com.dojoconsulting.gigawatt.core.fximpl.domain.FXPairFlyweightFactory;
 import com.dojoconsulting.gigawatt.core.fximpl.domain.TransactionType;
 import com.dojoconsulting.oanda.fxtrade.api.Account;
 import com.dojoconsulting.oanda.fxtrade.api.FXPair;
@@ -52,6 +55,9 @@ public class FXOrderManager implements IOrderManager {
 	private PreparedStatement ordersAbovePrice;
 	private PreparedStatement ordersBelowPrice;
 
+	private PreparedStatement ordersToExpire;
+	private PreparedStatement earliestExpiry;
+
 	private PreparedStatement orderCount;
 	private Map<String, LimitMonitor> limitMonitors;
 
@@ -61,7 +67,13 @@ public class FXOrderManager implements IOrderManager {
 
 	private IMarketManager marketManager;
 	private IAccountManager accountManager;
+	private TimeServer timeServer;
 
+	private TimeEvent expiryTimeEvent = createTimeEvent();
+
+	public void setTimeServer(final TimeServer timeServer) {
+		this.timeServer = timeServer;
+	}
 
 	public void setMarketManager(final IMarketManager marketManager) {
 		this.marketManager = marketManager;
@@ -74,7 +86,6 @@ public class FXOrderManager implements IOrderManager {
 	public void setDataSource(final DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
-
 
 	public void init(final BackTestConfig config) {
 		long timestamp = 0;
@@ -100,6 +111,9 @@ public class FXOrderManager implements IOrderManager {
 			ordersMaxBelowPrice = orderDB.prepareStatement("SELECT max(price) FROM orders WHERE isAbovePrice=0 AND market = ? AND isLong = ?");
 			ordersMinAbovePrice = orderDB.prepareStatement("SELECT min(price) FROM orders WHERE isAbovePrice=1 AND market = ? AND isLong = ?");
 
+			earliestExpiry = orderDB.prepareStatement("SELECT min(expiry) FROM orders");
+
+			ordersToExpire = orderDB.prepareStatement("SELECT orderId, accountId, market FROM orders WHERE expiry <= ?");
 			ordersAbovePrice = orderDB.prepareStatement("SELECT orderId, accountId, takeProfit, stopLoss FROM orders WHERE market = ? AND isLong = ? AND price <= ?");
 			ordersBelowPrice = orderDB.prepareStatement("SELECT orderId, accountId, takeProfit, stopLoss FROM orders WHERE market = ? AND isLong = ? AND price >= ?");
 
@@ -248,6 +262,44 @@ public class FXOrderManager implements IOrderManager {
 		}
 	}
 
+	private void expireOrders(final long expiryTime) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("FXOrderManager: Expiring orders for " + expiryTime);
+		}
+		try {
+			final ResultSet rs;
+			this.ordersToExpire.clearParameters();
+			this.ordersToExpire.setLong(1, expiryTime);
+			rs = this.ordersToExpire.executeQuery();
+
+			final ListMultimap<Integer, MiniOrderResult> ordersToExpire = new ArrayListMultimap<Integer, MiniOrderResult>();
+			while (rs.next()) {
+				final MiniOrderResult orderResult = new MiniOrderResult();
+				orderResult.transactionNumber = rs.getInt("orderId");
+				orderResult.accountNumber = rs.getInt("accountId");
+				orderResult.market = rs.getString("market");
+				ordersToExpire.put(orderResult.accountNumber, orderResult);
+			}
+			final LimitOrder lo = new LimitOrder(0);
+			final Set<Integer> ordersToExpireKeys = ordersToExpire.keySet();
+			for (final int accountNumber : ordersToExpireKeys) {
+				final Account account = accountManager.getAccountWithId(accountNumber);
+				final List<MiniOrderResult> orderResults = ordersToExpire.get(accountNumber);
+				for (final MiniOrderResult orderResult : orderResults) {
+					UtilAPI.setTransactionNumber(orderResult.transactionNumber, lo);
+					UtilAPI.setOrderClosed(lo, account);
+					lo.setPair(FXPairFlyweightFactory.getInstance().getPair(orderResult.market));
+					closeOrder(lo, TransactionType.ORDER_EXPIRY);
+				}
+			}
+			preTickProcess();
+		}
+		catch (SQLException e) {
+			e.printStackTrace(); //TODO error:: Improve error handling.
+			System.exit(1);
+		}
+	}
+
 	private void executeOrderTrade(final String market, final boolean isAbovePrice, final boolean isLong, final double currentPrice, final double currentPriceForClose) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("FXOrderManager: Executing " + (isLong ? "long" : "short") + " limit orders " + (isAbovePrice ? "above" : "below") + " price in " + market + " at current price of " + currentPrice);
@@ -315,6 +367,7 @@ public class FXOrderManager implements IOrderManager {
 				}
 			}
 			refreshLimitMonitor(market);
+			refreshExpiryTimeEvent(false);
 		}
 		catch (SQLException e) {
 			e.printStackTrace(); //TODO error:: Improve error handling.
@@ -348,6 +401,7 @@ public class FXOrderManager implements IOrderManager {
 			orderInsert.setLong(9, newOrder.getExpiry());
 			orderInsert.execute();
 			updateOrderMonitor(pair, newOrder.getPrice(), isLong, isAbovePrice);
+			refreshExpiryTimeEvent(false);
 			if (logger.isDebugEnabled()) {
 				final ResultSet rs = orderCount.executeQuery();
 				rs.next();
@@ -373,13 +427,15 @@ public class FXOrderManager implements IOrderManager {
 			if (transactionType == TransactionType.USER || transactionType == TransactionType.ORDER_EXPIRY) {
 				refreshPairs.add(closeOrder.getPair());
 			}
+			if (transactionType == TransactionType.USER) {
+				refreshExpiryTimeEvent(false);
+			}
 			if (logger.isDebugEnabled()) {
+				logger.debug("Closing (" + transactionType + ") limit order " + closeOrder.getTransactionNumber());
 				final ResultSet rs = orderCount.executeQuery();
 				rs.next();
 				final int numberOfRows = rs.getInt(1);
-				if (numberOfRows > 0) {
-					logger.debug("FXOrderManager:  " + numberOfRows + " rows currently in orders db");
-				}
+				logger.debug("FXOrderManager:  " + numberOfRows + " rows currently in orders db");
 			}
 		}
 		catch (SQLException e) {
@@ -404,11 +460,48 @@ public class FXOrderManager implements IOrderManager {
 			orderUpdate.execute();
 
 			refreshPairs.add(modifyOrder.getPair());
+			refreshExpiryTimeEvent(false);
 		}
 		catch (SQLException e) {
 			e.printStackTrace(); //TODO error:: Improve error handling.
 			System.exit(1);
 		}
+	}
+
+	private void refreshExpiryTimeEvent(final boolean createNew) {
+		try {
+			final ResultSet rs = earliestExpiry.executeQuery();
+			if (rs.next()) {
+				final long earliestExpiry = rs.getLong(1);
+
+				final long currentExpiryEventTime = expiryTimeEvent.getTimeForEvent();
+				if (createNew) {
+					expiryTimeEvent = createTimeEvent();
+					if (earliestExpiry != 0) {
+						timeServer.addTimeEvent(expiryTimeEvent);
+					}
+				} else if (earliestExpiry == 0) {
+					expiryTimeEvent.setTimeForEvent(earliestExpiry);
+					timeServer.removeTimeEvent(expiryTimeEvent);
+				} else if (currentExpiryEventTime > earliestExpiry || currentExpiryEventTime == 0) {
+					expiryTimeEvent.setTimeForEvent(earliestExpiry);
+					timeServer.changeTimeEvent(expiryTimeEvent);
+				}
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace(); //TODO error:: Improve error handling.
+			System.exit(1);
+		}
+	}
+
+	private TimeEvent createTimeEvent() {
+		return new TimeEvent() {
+			public void handle(final long timeForEvent) {
+				expireOrders(timeForEvent);
+				refreshExpiryTimeEvent(true);
+			}
+		};
 	}
 
 	private void updateOrderMonitor(final String market, final double price, final boolean isLong, final boolean isAbovePrice) {
@@ -450,6 +543,7 @@ public class FXOrderManager implements IOrderManager {
 		int accountNumber;
 		double takeProfit;
 		double stopLoss;
+		String market;
 	}
 
 	private class LimitMonitor {
