@@ -89,6 +89,7 @@ public class FXOrderManager implements IOrderManager {
 			final Connection orderDB = dataSource.getConnection();
 
 			final Statement st = orderDB.createStatement();
+			st.executeUpdate("DROP TABLE orders");
 			final String expression = "CREATE TABLE orders ( orderId INTEGER IDENTITY, accountId INTEGER, market CHAR(7), isLong BOOLEAN, isAbovePrice BOOLEAN, price FLOAT, stopLoss FLOAT, takeProfit FLOAT, expiry BIGINT)";
 			st.executeUpdate(expression);
 			st.close();

@@ -80,6 +80,8 @@ public class FXTradeManager implements ITradeManager {
 			final Connection tradeDB = dataSource.getConnection();
 
 			final Statement st = tradeDB.createStatement();
+
+			st.executeUpdate("DROP TABLE trades");
 			final String expression = "CREATE TABLE trades ( tradeId INTEGER IDENTITY, accountId INTEGER, market CHAR(7), isLong BOOLEAN, stopLoss FLOAT, takeProfit FLOAT)";
 			st.executeUpdate(expression);
 			st.close();
@@ -87,14 +89,14 @@ public class FXTradeManager implements ITradeManager {
 			tradeInsert = tradeDB.prepareStatement("INSERT INTO trades (tradeId, accountId, market, isLong, stopLoss, takeProfit) VALUES (?, ?, ?, ?, ?, ?)");
 			tradeUpdate = tradeDB.prepareStatement("UPDATE trades SET stopLoss = ?, takeProfit = ? WHERE tradeId = ?");
 			tradeSelectLongStopLoss = tradeDB.prepareStatement("SELECT max(stopLoss) FROM trades WHERE market = ? AND isLong = 1 AND stopLoss <> 0");
-			tradeSelectLongTakeProfit = tradeDB.prepareStatement("SELECT min(takeProfit) FROM trades WHERE market = ? AND isLong = 1 and takeProfit <> 0");
+			tradeSelectLongTakeProfit = tradeDB.prepareStatement("SELECT min(takeProfit) FROM trades WHERE market = ? AND isLong = 1 AND takeProfit <> 0");
 			tradeSelectShortStopLoss = tradeDB.prepareStatement("SELECT min(stopLoss) FROM trades WHERE market = ? AND isLong = 0 AND stopLoss <> 0");
-			tradeSelectShortTakeProfit = tradeDB.prepareStatement("SELECT max(takeProfit) FROM trades WHERE market = ? AND isLong = 0 and takeProfit <> 0");
-			stopLossTradesLong = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 1 AND stopLoss > ?");
-			stopLossTradesShort = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 0 AND stopLoss < ?");
+			tradeSelectShortTakeProfit = tradeDB.prepareStatement("SELECT max(takeProfit) FROM trades WHERE market = ? AND isLong = 0 AND takeProfit <> 0");
 
-			takeProfitTradesLong = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 1 AND takeProfit < ?");
-			takeProfitTradesShort = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 0 AND takeProfit > ?");
+			stopLossTradesLong = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 1 AND stopLoss > ? AND stopLoss <> 0");
+			stopLossTradesShort = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 0 AND stopLoss < ? AND stopLoss <> 0");
+			takeProfitTradesLong = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 1 AND takeProfit < ? AND takeProfit <> 0");
+			takeProfitTradesShort = tradeDB.prepareStatement("SELECT tradeId, accountId FROM trades WHERE market = ? AND isLong = 0 AND takeProfit > ? AND takeProfit <> 0");
 
 			tradeClose = tradeDB.prepareStatement("DELETE FROM trades WHERE tradeId = ?");
 			tradeCount = tradeDB.prepareStatement("SELECT count(*) FROM trades");
