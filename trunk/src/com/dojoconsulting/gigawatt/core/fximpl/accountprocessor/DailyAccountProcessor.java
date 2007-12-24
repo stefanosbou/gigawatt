@@ -8,13 +8,17 @@ import com.dojoconsulting.gigawatt.core.TimeServer;
  * Date: 19-Dec-2007
  * Time: 18:40:04
  */
-public class OnceADayAccountProcessor implements IAccountProcessorStrategy {
+public class DailyAccountProcessor implements IAccountProcessorStrategy {
 
-	private static final TimeServer timeServer = TimeServer.getInstance();
 	private static final int SECS_IN_A_DAY = 1000 * 60 * 60 * 24;
+	private TimeServer timeServer;
 
 	public boolean requiresMarginCall() {
 		final long time = timeServer.getTimeSinceStart();
 		return time % SECS_IN_A_DAY == 0;
+	}
+
+	public void setTimeServer(final TimeServer timeServer) {
+		this.timeServer = timeServer;
 	}
 }

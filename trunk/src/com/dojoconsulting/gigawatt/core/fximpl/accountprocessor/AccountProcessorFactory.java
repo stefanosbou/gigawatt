@@ -1,5 +1,10 @@
 package com.dojoconsulting.gigawatt.core.fximpl.accountprocessor;
 
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.access.BeanFactoryLocator;
+import org.springframework.beans.factory.access.BeanFactoryReference;
+import org.springframework.beans.factory.access.SingletonBeanFactoryLocator;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Amit Chada
@@ -8,14 +13,21 @@ package com.dojoconsulting.gigawatt.core.fximpl.accountprocessor;
  */
 public class AccountProcessorFactory {
 
+	private static BeanFactory beanFactory;
+
+	static {
+		final BeanFactoryLocator bfLocator = SingletonBeanFactoryLocator.getInstance("com/dojoconsulting/gigawatt/config/beanRefContext.xml");
+		final BeanFactoryReference bf = bfLocator.useBeanFactory("fxOandaEngineFactory");
+		beanFactory = bf.getFactory();
+	}
 
 	public static IAccountProcessorStrategy getProcessor(final String processType) {
 		if (processType.equals("NEVER")) {
-			return new NeverAccountProcessor();
+			return (IAccountProcessorStrategy) beanFactory.getBean("neverAccountProcessor");
 		}
-		if (processType.equals("MINIMAL")) {
-			return new OnceADayAccountProcessor();
+		if (processType.equals("DAILY")) {
+			return (IAccountProcessorStrategy) beanFactory.getBean("dailyAccountProcessor");
 		}
-		return new FullAccountProcessor();
+		return (IAccountProcessorStrategy) beanFactory.getBean("fullAccountProcessor");
 	}
 }

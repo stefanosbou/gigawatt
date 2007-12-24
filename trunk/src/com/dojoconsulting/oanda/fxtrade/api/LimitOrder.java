@@ -1,7 +1,6 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.GigawattException;
-import com.dojoconsulting.gigawatt.core.TimeServer;
 
 /**
  * A LimitOrder is a spot order that is executed when the target price is met.  The StopLossOrder and TakeProfitOrder
@@ -30,9 +29,8 @@ public final class LimitOrder extends EntryOrder implements Cloneable {
 		}
 	}
 
-	void validate() throws OAException {
+	void validate(final long currentTime) throws OAException {
 		final long expiry = getExpiry();
-		final long currentTime = TimeServer.getInstance().getTime();
 		if (getPair() == null) {
 			throw new OAException("You must set a valid pair.");
 		}

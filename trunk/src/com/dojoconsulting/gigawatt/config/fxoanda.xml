@@ -24,10 +24,14 @@
 		<property name="strategyManager" ref="strategyManager"/>
 		<property name="interestRateManager" ref="interestRateManager"/>
 		<property name="transactionManager" ref="transactionManager"/>
+		<property name="timeServer" ref="timeServer"/>
 	</bean>
+
+	<bean id="timeServer" class="com.dojoconsulting.gigawatt.core.TimeServer"/>
 
 	<bean id="marketManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXMarketManager">
 		<property name="historyManager" ref="historyManager"/>
+		<property name="timeServer" ref="timeServer"/>
 	</bean>
 	<bean id="tradeManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXTradeManager">
 		<property name="dataSource" ref="dataSource"/>
@@ -48,4 +52,14 @@
 		<property name="accountManager" ref="accountManager"/>
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
+
+	<bean id="neverAccountProcessor"
+		  class="com.dojoconsulting.gigawatt.core.fximpl.accountprocessor.NeverAccountProcessor"/>
+	<bean id="dailyAccountProcessor"
+		  class="com.dojoconsulting.gigawatt.core.fximpl.accountprocessor.DailyAccountProcessor">
+		<property name="timeServer" ref="timeServer"/>
+	</bean>
+	<bean id="fullAccountProcessor"
+		  class="com.dojoconsulting.gigawatt.core.fximpl.accountprocessor.FullAccountProcessor"/>
+
 </beans>
