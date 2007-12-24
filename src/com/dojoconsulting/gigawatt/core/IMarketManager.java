@@ -28,4 +28,6 @@ public interface IMarketManager {
 	void close();
 
 	Multimap<FXPair, FXTick> getPerLoopTickTable();
+
+	long getTickCounter();
 }

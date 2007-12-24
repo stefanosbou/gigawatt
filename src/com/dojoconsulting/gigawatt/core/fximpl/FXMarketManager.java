@@ -11,6 +11,8 @@ import com.dojoconsulting.oanda.fxtrade.api.FXPair;
 import com.dojoconsulting.oanda.fxtrade.api.FXTick;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -26,12 +28,15 @@ import java.util.Map;
  */
 public class FXMarketManager implements IMarketManager {
 
+	private static Log logger = LogFactory.getLog(FXMarketManager.class);
 	private IMarketData[] markets;
 	private final Map<FXPair, FXTick> tickTable;
 	private final Multimap<FXPair, FXTick> perLoopTickTable;
 	private boolean newTicksThisLoop;
 	private IHistoryManager historyManager;
 	private TimeServer timeServer;
+
+	private long tickCounter = 0;
 
 	public FXMarketManager() {
 		tickTable = new HashMap<FXPair, FXTick>();
@@ -104,6 +109,7 @@ public class FXMarketManager implements IMarketManager {
 			perLoopTickTable.put(pair, tick);
 		}
 		historyManager.registerTick(pair, tick);
+		tickCounter++;
 	}
 
 	public void nextTick(final long currentTimeInMillis) {
@@ -118,7 +124,7 @@ public class FXMarketManager implements IMarketManager {
 	}
 
 	public void close() {
-		// Nothing to do.
+		logger.info("Total of " + tickCounter + " ticks processed.");
 	}
 
 	public void setHistoryManager(final IHistoryManager historyManager) {
@@ -127,5 +133,9 @@ public class FXMarketManager implements IMarketManager {
 
 	public void setTimeServer(final TimeServer timeServer) {
 		this.timeServer = timeServer;
+	}
+
+	public long getTickCounter() {
+		return tickCounter;
 	}
 }

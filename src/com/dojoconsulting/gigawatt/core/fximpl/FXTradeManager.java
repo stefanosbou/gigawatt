@@ -39,7 +39,7 @@ import java.util.Set;
  */
 public class FXTradeManager implements ITradeManager {
 
-	private Log logger = LogFactory.getLog(FXTradeManager.class);
+	private static Log logger = LogFactory.getLog(FXTradeManager.class);
 	private PreparedStatement tradeInsert;
 	private PreparedStatement tradeUpdate;
 	private PreparedStatement tradeClose;

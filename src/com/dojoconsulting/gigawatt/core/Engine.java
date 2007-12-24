@@ -24,7 +24,7 @@ public class Engine {
 	private ITransactionManager transactionManager;
 	private IOrderManager orderManager;
 
-	private Log log = LogFactory.getLog(Engine.class);
+	private static Log log = LogFactory.getLog(Engine.class);
 
 	private boolean running;
 	private long logStartTime;
@@ -114,6 +114,8 @@ public class Engine {
 		log.info("FXOandaBackTest has finished.");
 		final long totalTime = new Date().getTime() - logStartTime;
 		log.info("Test took " + totalTime);
+		final long ticksPerSecond = marketManager.getTickCounter() / (totalTime / 1000);
+		log.info("TicksPerSecond: " + ticksPerSecond);
 	}
 
 	private class Worker extends Thread {
