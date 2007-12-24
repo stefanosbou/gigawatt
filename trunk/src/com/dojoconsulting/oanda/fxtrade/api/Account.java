@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class Account {
 
-	private Log logger = LogFactory.getLog(Account.class);
+	private static Log logger = LogFactory.getLog(Account.class);
 
 	private int accountId;
 	private double balance;

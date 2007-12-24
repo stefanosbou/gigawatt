@@ -104,6 +104,10 @@ public class AccountTest extends TestCase {
 			public Multimap<FXPair, FXTick> getPerLoopTickTable() {
 				return null;
 			}
+
+			public long getTickCounter() {
+				return 0;
+			}
 		};
 
 		engine.setMarketManager(mockManager);
@@ -200,6 +204,10 @@ public class AccountTest extends TestCase {
 
 			public Multimap<FXPair, FXTick> getPerLoopTickTable() {
 				return null;
+			}
+
+			public long getTickCounter() {
+				return 0;
 			}
 		};
 

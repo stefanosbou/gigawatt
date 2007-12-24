@@ -43,7 +43,7 @@ import java.util.Set;
 
 public class FXOrderManager implements IOrderManager {
 
-	private Log logger = LogFactory.getLog(FXOrderManager.class);
+	private static Log logger = LogFactory.getLog(FXOrderManager.class);
 
 	private PreparedStatement orderInsert;
 	private PreparedStatement orderUpdate;
