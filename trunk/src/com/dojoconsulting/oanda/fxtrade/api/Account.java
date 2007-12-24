@@ -233,9 +233,11 @@ public final class Account {
 		final int transactionNumber = lo.getTransactionNumber();
 		final LimitOrder closeOrder = internalGetOrderWithId(transactionNumber);
 		if (closeOrder == null) {
-			throw new OAException("Invalid MarketOrder " + transactionNumber);
+			throw new OAException("Invalid LimitOrder " + transactionNumber);
 		}
-		logger.debug("Account: Closing trade " + transactionNumber + " in " + closeOrder.getPair().getPair());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Account: Closing order " + transactionNumber + " in " + closeOrder.getPair().getPair());
+		}
 		orderManager.closeOrder(closeOrder, TransactionType.USER);
 		orders.remove(closeOrder);
 	}
