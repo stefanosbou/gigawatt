@@ -76,20 +76,12 @@ public class TimeServer {
 		TIME_INCREMENT = config.getIncrement();
 	}
 
-	public void addTimeEvent(final TimeEvent timeEvent) {
-		if (timeEvent.getTimeForEvent() == 0) {
-			throw new GigawattException("No time for event set on TimeEvent");
-		}
-		timeEvents.add(timeEvent);
-		calculateNextTimeEvent();
-	}
-
 	private void calculateNextTimeEvent() {
 		if (timeEvents.isEmpty()) {
 			nextTimeEvent = 0;
 			return;
 		}
-		nextTimeEvent = Integer.MAX_VALUE;
+		nextTimeEvent = Long.MAX_VALUE;
 		for (final TimeEvent timeEvent : timeEvents) {
 			nextTimeEvent = Math.min(nextTimeEvent, timeEvent.getTimeForEvent());
 		}
@@ -108,6 +100,24 @@ public class TimeServer {
 					removeTimeEvent(timeEvent, false);
 				}
 			}
+		}
+		calculateNextTimeEvent();
+	}
+
+	public void addTimeEvent(final TimeEvent timeEvent) {
+		if (timeEvent.getTimeForEvent() == 0) {
+			throw new GigawattException("No time for event set on TimeEvent");
+		}
+		timeEvents.add(timeEvent);
+		calculateNextTimeEvent();
+	}
+
+	public void changeTimeEvent(final TimeEvent timeEvent) {
+		if (timeEvent.getTimeForEvent() == 0) {
+			throw new GigawattException("No time for event set on TimeEvent");
+		}
+		if (!timeEvents.contains(timeEvent)) {
+			timeEvents.add(timeEvent);
 		}
 		calculateNextTimeEvent();
 	}
@@ -178,4 +188,5 @@ public class TimeServer {
 	public long getEndDateAsMillis() {
 		return endDateAsMillis;
 	}
+
 }

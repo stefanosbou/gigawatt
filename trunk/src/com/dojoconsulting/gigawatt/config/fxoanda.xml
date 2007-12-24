@@ -51,6 +51,7 @@
 		<property name="marketManager" ref="marketManager"/>
 		<property name="accountManager" ref="accountManager"/>
 		<property name="dataSource" ref="dataSource"/>
+		<property name="timeServer" ref="timeServer"/>
 	</bean>
 
 	<bean id="neverAccountProcessor"
