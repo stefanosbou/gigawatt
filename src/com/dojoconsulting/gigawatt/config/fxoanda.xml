@@ -46,7 +46,9 @@
 	<bean id="strategyManager" class="com.dojoconsulting.gigawatt.core.generic.GenericStrategyManager"/>
 	<bean id="historyManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXHistoryManager"/>
 	<bean id="interestRateManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXInterestRateManager"/>
-	<bean id="transactionManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXTransactionManager"/>
+	<bean id="transactionManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
 	<bean id="orderManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXOrderManager">
 		<property name="marketManager" ref="marketManager"/>
 		<property name="accountManager" ref="accountManager"/>
