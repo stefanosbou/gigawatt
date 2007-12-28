@@ -4,18 +4,9 @@
 
 package com.dojoconsulting.gigawatt.core.fximpl;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.HashSet;
-
 import com.dojoconsulting.gigawatt.config.BackTestConfig;
 import com.dojoconsulting.gigawatt.core.IInterestRateManager;
-import com.dojoconsulting.gigawatt.core.fximpl.FXTradeManager.OrderMonitor;
 import com.dojoconsulting.oanda.fxtrade.api.Account;
-import com.dojoconsulting.oanda.fxtrade.api.FXPair;
 import com.dojoconsulting.oanda.fxtrade.api.MarketOrder;
 import com.dojoconsulting.oanda.fxtrade.api.Position;
 import com.dojoconsulting.oanda.fxtrade.api.Transaction;
