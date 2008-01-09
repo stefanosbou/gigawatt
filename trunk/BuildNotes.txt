@@ -1,0 +1,5 @@
+--gigawatt needs JDK compliance level 5.0
+    -in Eclipse, select Window-->Preferences-->Java-->Compiler and ensure that
+    Compiler compliance level is set to 5.0
+    
+--Application assumes that Gigawatt is located at "C:\\projects\\IdeaProjects\\gigawatt
