@@ -1,5 +1,6 @@
 <backtestconfig engine="fxoanda">
 	<startdate>2006-12-30 01:21:25</startdate>
+	<!--<enddate>2007-01-01 00:00:00</enddate>-->
 	<increment>5000</increment>
 	<users>
 		<user id="12345678">
@@ -18,7 +19,7 @@
 					<currency>GBP</currency>
 					<leverage>50</leverage>
 				</account>
-				<account id="1235">
+				<account id="4321" processType="DAILY">
 					<name>Hedge</name>
 					<balance>5000.00</balance>
 					<createdate>2007-01-01</createdate>

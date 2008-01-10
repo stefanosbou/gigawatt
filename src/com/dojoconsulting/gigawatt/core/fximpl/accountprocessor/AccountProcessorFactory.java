@@ -22,11 +22,13 @@ public class AccountProcessorFactory {
 	}
 
 	public static IAccountProcessorStrategy getProcessor(final String processType) {
-		if (processType.equalsIgnoreCase("NEVER")) {
-			return (IAccountProcessorStrategy) beanFactory.getBean("neverAccountProcessor");
-		}
-		if (processType.equalsIgnoreCase("DAILY")) {
-			return (IAccountProcessorStrategy) beanFactory.getBean("dailyAccountProcessor");
+		if (processType != null) {
+			if (processType.equalsIgnoreCase("NEVER")) {
+				return (IAccountProcessorStrategy) beanFactory.getBean("neverAccountProcessor");
+			}
+			if (processType.equalsIgnoreCase("DAILY")) {
+				return (IAccountProcessorStrategy) beanFactory.getBean("dailyAccountProcessor");
+			}
 		}
 		return (IAccountProcessorStrategy) beanFactory.getBean("fullAccountProcessor");
 	}
