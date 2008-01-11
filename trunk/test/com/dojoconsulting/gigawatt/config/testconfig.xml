@@ -33,11 +33,11 @@
 	<markets>
 		<market product="GBP/JPY">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/IdeaProjects/backtesttool/resources/GBPJPY.txt</filename>
+			<filename>resources/GBPJPY.txt</filename>
 		</market>
 		<market product="AUD/JPY">
 			<classname>com.dojoconsulting.oanda.fxtrade.data.EODMarketData</classname>
-			<filename>C:/projects/IdeaProjects/backtesttool/resources/AUDJPY.txt</filename>
+			<filename>resources/AUDJPY.txt</filename>
 		</market>
 	</markets>
 </backtestconfig>

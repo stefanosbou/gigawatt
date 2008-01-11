@@ -16,7 +16,7 @@ import java.util.List;
 public class BackTestConfigTest extends TestCase {
 
 	public void testLoad() throws ParseException {
-		System.setProperty(BackTestConfig.CONFIG_PROPERTY, "C:\\projects\\IdeaProjects\\gigawatt\\test\\com\\dojoconsulting\\gigawatt\\config\\testconfig.xml");
+		System.setProperty(BackTestConfig.CONFIG_PROPERTY, "/test/com/dojoconsulting/gigawatt/config/testconfig.xml");
 		final BackTestConfig config = BackTestConfig.load();
 		assertEquals("Increment was not set correctly.", 1000, config.getIncrement());
 		assertEquals("Start date was not set correctly", new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("2006-12-30 01:21:25").getTime(), config.getStartdate().getTime());
