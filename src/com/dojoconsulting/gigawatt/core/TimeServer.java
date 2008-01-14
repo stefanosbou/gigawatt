@@ -101,6 +101,7 @@ public class TimeServer {
 				}
 			}
 		}
+		logger.info("Processed " + timeEvents.size() + " time events at " + currentTimeInMillis);
 		calculateNextTimeEvent();
 	}
 
