@@ -20,9 +20,9 @@ public interface IInterestRateManager {
 
 	Transaction calcInterestForClosedTrade(final MarketOrder marketOrder);
 
-	Transaction calcInterestForRolloverPosition(final Position position);
+	Transaction calcInterestForPosition(final Position position);
+	
+	void calcInterestForRollover();
 
 	Transaction calcInterestForAccount(final Account account);
-
-	void registerBalanceChange(final Account account, final double oldBalance, final double newBalance);
 }
