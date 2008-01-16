@@ -94,12 +94,14 @@ public class TimeServer {
 	}
 
 	private void processTimeEvents() {
+		int counter = 0;
 		for (int i = timeEvents.size(); i > 0; i--) {
 			final TimeEvent timeEvent = timeEvents.get(i - 1);
 			final long timeForEvent = timeEvent.getTimeForEvent();
 			final long recurrance = timeEvent.getRecurrence();
 			if (currentTimeInMillis >= timeForEvent) {
 				timeEvent.handle(timeForEvent);
+				counter++;
 				if (recurrance > 0) {
 					timeEvent.setTimeForEvent(timeForEvent + recurrance);
 				} else {
@@ -107,7 +109,10 @@ public class TimeServer {
 				}
 			}
 		}
-		logger.info("Processed " + timeEvents.size() + " time events at " + currentTimeInMillis);
+		if (logger.isInfoEnabled()) {
+			final String currentDate = fullDateFormat.format(new Date(currentTimeInMillis));
+			logger.info("Processed " + counter + " time events at " + currentDate + " (" + currentTimeInMillis + ")");
+		}
 		calculateNextTimeEvent();
 	}
 
