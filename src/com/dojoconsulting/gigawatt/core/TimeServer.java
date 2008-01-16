@@ -11,9 +11,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class TimeServer {
@@ -35,7 +38,10 @@ public class TimeServer {
 
 	private List<TimeEvent> timeEvents;
 	private long nextTimeEvent = 0;
-	private static final int DAILY = 1000 * 60 * 60 * 24;
+	public static final int MINUTE_IN_MILLI = 1000 * 60;
+	public static final int HOUR_IN_MILLI = MINUTE_IN_MILLI * 60;
+	public static final int DAY_IN_MILLI = HOUR_IN_MILLI * 24;
+	public static final int WEEK_IN_MILLI = DAY_IN_MILLI * 7;
 
 	public TimeServer() {
 	}
@@ -68,8 +74,8 @@ public class TimeServer {
 					printProgress(timeForEvent);
 				}
 			};
-			processingTimeEvent.setRecurrence(DAILY);
-			processingTimeEvent.setTimeForEvent(startDateAsMillis - (startDateAsMillis % DAILY));
+			processingTimeEvent.setRecurrence(DAY_IN_MILLI);
+			processingTimeEvent.setTimeForEvent(startDateAsMillis - (startDateAsMillis % DAY_IN_MILLI));
 
 			addTimeEvent(processingTimeEvent);
 		}
@@ -103,6 +109,30 @@ public class TimeServer {
 		}
 		logger.info("Processed " + timeEvents.size() + " time events at " + currentTimeInMillis);
 		calculateNextTimeEvent();
+	}
+
+
+	public long getTimeInMilliFor(final String time) {
+		try {
+			final Date currentDate = new Date(currentTimeInMillis);
+			final String currentDateAsString = shortDateFormat.format(currentDate);
+
+			final String requestedDateAsString = currentDateAsString + " " + time;
+			final Date requestedDate = fullDateFormat.parse(requestedDateAsString);
+
+			final Calendar currentCalendar = new GregorianCalendar();
+			currentCalendar.setTime(currentDate);
+			final Calendar requestedCalendar = new GregorianCalendar();
+			requestedCalendar.setTime(requestedDate);
+
+			if (currentCalendar.after(requestedCalendar)) {
+				requestedCalendar.add(Calendar.DATE, 1);
+			}
+
+			return requestedCalendar.getTimeInMillis();
+		} catch (ParseException e) {
+			throw new GigawattException("Problem attempting to parse time when calculating TimeInMillisFor(" + time + ")", e);
+		}
 	}
 
 	public void addTimeEvent(final TimeEvent timeEvent) {
