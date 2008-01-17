@@ -45,7 +45,10 @@
 	<bean id="userManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXUserManager"/>
 	<bean id="strategyManager" class="com.dojoconsulting.gigawatt.core.generic.GenericStrategyManager"/>
 	<bean id="historyManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXHistoryManager"/>
-	<bean id="interestRateManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXInterestRateManager"/>
+	<bean id="interestRateManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXInterestRateManager">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="timeServer" ref="timeServer"/>
+	</bean>
 	<bean id="transactionManager" class="com.dojoconsulting.gigawatt.core.fximpl.FXTransactionManager">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
