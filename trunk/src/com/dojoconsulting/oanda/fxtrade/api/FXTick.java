@@ -4,6 +4,7 @@ import com.dojoconsulting.gigawatt.data.ITick;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * An FXTick object represents a single forex spot price.
@@ -12,6 +13,12 @@ public final class FXTick implements Cloneable, ITick {
 	private long timestamp;
 	private double bid;
 	private double ask;
+
+	private static DateFormat dateFormatter = DateFormat.getDateTimeInstance();
+
+	static {
+		dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 
 	public FXTick() {
 		this.timestamp = 0;
@@ -71,7 +78,7 @@ public final class FXTick implements Cloneable, ITick {
 
 	public String toString() {
 		final Date date = new Date(timestamp);
-		final String strDate = DateFormat.getDateInstance().format(date);
+		final String strDate = dateFormatter.format(date);
 		return strDate + ": " + timestamp + " " + bid + " " + ask;
 		//TODO proper: Implement toString()
 	}
