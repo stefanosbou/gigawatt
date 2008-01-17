@@ -109,9 +109,9 @@ public class TimeServer {
 				}
 			}
 		}
-		if (logger.isInfoEnabled()) {
+		if (logger.isDebugEnabled()) {
 			final String currentDate = fullDateFormat.format(new Date(currentTimeInMillis));
-			logger.info("Processed " + counter + " time events at " + currentDate + " (" + currentTimeInMillis + ")");
+			logger.debug("Processed " + counter + " time events at " + currentDate + " (" + currentTimeInMillis + ")");
 		}
 		calculateNextTimeEvent();
 	}
