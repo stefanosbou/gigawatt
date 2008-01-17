@@ -134,12 +134,13 @@ public class FXInterestRateManager implements IInterestRateManager {
 	}
 
 	private void createRollover() {
-		rolloverInterestTimeEvent.setTimeForEvent(timeServer.getTimeInMilliFor("21:00:00"));
+		rolloverInterestTimeEvent.setTimeForEvent(timeServer.getTimeInMilliFor("16:00:00"));
 		rolloverInterestTimeEvent.setRecurrence(TimeServer.DAY_IN_MILLI);
 		timeServer.addTimeEvent(rolloverInterestTimeEvent);
 	}
 
 	private void loadIrateHistory() {
 		//Ref: OandaToGigawattTickConvertor, load db from ascii file
+		
 	}
 }

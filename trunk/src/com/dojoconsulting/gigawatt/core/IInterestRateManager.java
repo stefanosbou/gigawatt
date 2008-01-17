@@ -17,6 +17,8 @@ public interface IInterestRateManager {
 	void close();
 
 	void init(BackTestConfig config);
+	
+	void registerBalanceChange(final Account account, final double oldBalance, final double newBalance);
 
 	Transaction calcInterestForClosedTrade(final MarketOrder marketOrder);
 
@@ -25,4 +27,5 @@ public interface IInterestRateManager {
 	void calcInterestForRollover();
 
 	Transaction calcInterestForAccount(final Account account);
+	
 }
