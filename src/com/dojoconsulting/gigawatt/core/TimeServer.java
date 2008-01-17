@@ -18,6 +18,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 public class TimeServer {
 	public static int TIME_INCREMENT;
@@ -49,6 +50,10 @@ public class TimeServer {
 	private long currentTimeInMillis;
 
 	void init(final BackTestConfig config, final Engine engine) {
+
+		shortDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		fullDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
 		this.engine = engine;
 		startDate = config.getStartdate();
 		endDate = config.getEnddate();

@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * User: Amit Chada
@@ -20,6 +21,7 @@ public class GainTickMarketData extends AbstractFileMarketDataReader {
 
 	public GainTickMarketData(final FXPair pair, final String path) {
 		super(pair, path);
+		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 
 	protected void processRecord(final String record, final TickRecord tickRecord) throws ParseException {

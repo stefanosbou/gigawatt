@@ -16,6 +16,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by IntelliJ IDEA.
@@ -61,6 +62,7 @@ public class OandaToGigawattTickConvertor {
 
 		final RecordProcessor processor = mode.equals("ASCII") ? new AsciiRecordProcessor() : new CsvRecordProcessor();
 		final DateFormat formatter = new SimpleDateFormat("dd/MM/yy hh:mm:ss");
+		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 		String currentToken = "";
 		try {
 			in = new BufferedReader(new FileReader(from));
