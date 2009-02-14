@@ -23,8 +23,8 @@ import java.util.Date;
  * Date: 15-Oct-2007
  * Time: 07:59:14
  */
-public class FXNightTraderStrategy implements IStrategy {
-	private static Log logger = LogFactory.getLog(FXNightTraderStrategy.class);
+public class TestStrategy implements IStrategy {
+	private static Log logger = LogFactory.getLog(TestStrategy.class);
 
 	private FXTest client;
 	private FXPair pair;
@@ -33,11 +33,11 @@ public class FXNightTraderStrategy implements IStrategy {
 	private long startTime;
 	private RateTable rateTable;
 
-	private static final int SECS_IN_A_DAY = 1000 * 60 * 60 * 24;
+	private static final int TEN_MINUTE = 1000 * 60 * 10;
 
 	public void handle() {
 		final long time = client.getServerTime() - startTime;
-		if (time % SECS_IN_A_DAY != 0) {
+		if (time % TEN_MINUTE != 0) {
 			return;
 		}
 		doStrategy(primaryAccount, true);
@@ -78,7 +78,7 @@ public class FXNightTraderStrategy implements IStrategy {
 
 			if (logger.isInfoEnabled()) {
 				final Date date = new Date(client.getServerTime());
-				final String strDate = DateFormat.getDateInstance().format(date);
+				final String strDate = DateFormat.getDateInstance(DateFormat.FULL).format(date);
 				final String message;
 				message = strDate + ": " + (goLong ? "Long " : "Short ") + units + " units at " + (goLong ? tick.getAsk() : tick.getBid());
 				logger.info(message);

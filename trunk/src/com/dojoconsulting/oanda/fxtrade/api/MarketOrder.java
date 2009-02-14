@@ -28,7 +28,7 @@ public final class MarketOrder extends Order implements Cloneable {
 		}
 		final double profit = (currentRate - getPrice()) * getUnits();
 		return UtilMath.round(profit, 5);
-		// todo:  What does this method return if the trade is closed?
+		//TODO:  What does this method return if the trade is closed?
 	}
 
 	public int getTransactionLink() {
@@ -134,5 +134,9 @@ public final class MarketOrder extends Order implements Cloneable {
 
 	boolean isClosed() {
 		return (getClose() != null);
+	}
+
+	public boolean isBuy() {
+		return getUnits() > 0;
 	}
 }
