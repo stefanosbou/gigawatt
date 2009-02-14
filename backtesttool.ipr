@@ -248,10 +248,19 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
+  <component name="TestDoxConfiguration">
+    <option name="createTestIfMissing" value="true" />
+    <option name="deletePackageOccurrences" value="true" />
+  </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
+  <component name="copyright">
+    <Base>
+      <setting name="state" value="2" />
+    </Base>
+  </component>
   <component name="libraryTable">
     <library name="spring-2.0.2">
       <CLASSES>
@@ -288,6 +297,13 @@
     <library name="log4j">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/log4j-1.2.15.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="Jccap">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../../Windows/Sun/Java/lib/ext/jpcap.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

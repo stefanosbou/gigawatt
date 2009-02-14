@@ -60,7 +60,7 @@ public class FXInterestRateManager implements IInterestRateManager {
 			final Connection irateDB = dataSource.getConnection();
 
 			final Statement st = irateDB.createStatement();
-//			//currency timeStartedInMillis bid ask
+			st.executeUpdate("DROP TABLE irates IF EXISTS");
 			final String expression = "CREATE TABLE irates ( currency INTEGER, timestamp FLOAT, bid FLOAT, ask FLOAT, PRIMARY KEY(currency, timestamp))";
 			st.executeUpdate(expression);
 			st.close();
@@ -141,6 +141,6 @@ public class FXInterestRateManager implements IInterestRateManager {
 
 	private void loadIrateHistory() {
 		//Ref: OandaToGigawattTickConvertor, load db from ascii file
-		
+
 	}
 }
