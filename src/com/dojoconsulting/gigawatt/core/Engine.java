@@ -105,7 +105,6 @@ public class Engine {
 		userManager.close();
 		tradeManager.close();
 		orderManager.close();
-		//TODO: is int rate manager close needed?
 		interestRateManager.close();
 		strategyManager.close();
 		marketManager.close();
@@ -116,6 +115,9 @@ public class Engine {
 		log.info("Test took " + totalTime);
 		final long ticksPerSecond = marketManager.getTickCounter() / (totalTime / 1000);
 		log.info("TicksPerSecond: " + ticksPerSecond);
+		if (!log.isInfoEnabled()) {
+			System.out.println("Test took " + totalTime);
+		}
 	}
 
 	private class Worker extends Thread {

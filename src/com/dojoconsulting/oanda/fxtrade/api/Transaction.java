@@ -64,12 +64,15 @@ public final class Transaction implements Cloneable {
 	private double takeProfit;
 	private long timestamp;
 	private int transactionLink;
-	private int transationNumber;
+	private int transactionNumber;
 	private long units;
-	private boolean buy;
-	private boolean sell;
+	private String type;
+	private double lowerBound;
+	private double upperBound;
+	private long expiry;
+	private double profitLoss;
 
-	Transaction(final double amount, final double balance, final int completionCode, final int diaspora, final double interest, final double margin, final FXPair pair, final double price, final double stopLoss, final double takeProfit, final long timestamp, final int transactionLink, final int transationNumber, final long units, final boolean buy, final boolean sell) {
+	Transaction(final double amount, final double balance, final int completionCode, final int diaspora, final double interest, final double margin, final FXPair pair, final double price, final double stopLoss, final double takeProfit, final long timestamp, final int transactionLink, final int transactionNumber, final long units, final String type, final long expiry, final double lowerBound, final double upperBound, final double profitLoss) {
 		this.amount = amount;
 		this.balance = balance;
 		this.completionCode = completionCode;
@@ -82,10 +85,13 @@ public final class Transaction implements Cloneable {
 		this.takeProfit = takeProfit;
 		this.timestamp = timestamp;
 		this.transactionLink = transactionLink;
-		this.transationNumber = transationNumber;
+		this.transactionNumber = transactionNumber;
 		this.units = units;
-		this.buy = buy;
-		this.sell = sell;
+		this.type = type;
+		this.expiry = expiry;
+		this.lowerBound = lowerBound;
+		this.upperBound = upperBound;
+		this.profitLoss = profitLoss;
 	}
 
 	protected Object clone() throws CloneNotSupportedException {
@@ -154,27 +160,27 @@ public final class Transaction implements Cloneable {
 		return units;
 	}
 
-	public boolean isBuy() {
-		return buy;
-	}
-
-	public boolean isSell() {
-		return sell;
-	}
-
-	public int getTransationNumber() {
-		return transationNumber;
+	public int getTransactionNumber() {
+		return transactionNumber;
 	}
 
 	public String getType() {
-		final String type = transactionTypes[completionCode % 100];
-		if (completionCode == FX_INTEREST) {
-			if (price < 0) {
-				return type + "Payment";
-			} else {
-				return type + "Earned";
-			}
-		}
 		return type;
+	}
+
+	public double getLowerBound() {
+		return lowerBound;
+	}
+
+	public double getUpperBound() {
+		return upperBound;
+	}
+
+	public long getExpiry() {
+		return expiry;
+	}
+
+	public double getProfitLoss() {
+		return profitLoss;
 	}
 }

@@ -13,7 +13,9 @@ import com.dojoconsulting.gigawatt.core.fximpl.domain.TransactionType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +32,7 @@ public final class Account {
 	private static Log logger = LogFactory.getLog(Account.class);
 
 	private int accountId;
-	private double balance;
+	private BigDecimal balance;
 	private String homeCurrency;
 	private String accountName;
 	private long createDate;
@@ -41,7 +43,7 @@ public final class Account {
 	private List<Transaction> transactions;
 	private List<MarketOrder> closedTrades;
 
-	private double realizedPL;
+	private BigDecimal realizedPL;
 	private int leverage;
 	private ITradeManager tradeManager;
 	private ITransactionManager transactionManager;
@@ -77,7 +79,7 @@ public final class Account {
 	Account(final int accountId, final double balance, final String homeCurrency, final String accountName, final long createDate, final int leverage) {
 		this.createDate = createDate;
 		this.accountId = accountId;
-		this.balance = balance;
+		this.balance = new BigDecimal(balance);
 		this.homeCurrency = homeCurrency;
 		this.accountName = accountName;
 		this.leverage = leverage;
@@ -88,7 +90,7 @@ public final class Account {
 		closedTrades = new ArrayList<MarketOrder>();
 		transactions = new ArrayList<Transaction>();
 
-		realizedPL = 0.0;
+		realizedPL = new BigDecimal(0.0);
 	}
 
 	public void close(final MarketOrder mo) throws OAException {
@@ -117,7 +119,7 @@ public final class Account {
 		final FXTick tick = (FXTick) tickTable.get(closeTrade.getPair());
 		final MarketOrder close = new MarketOrder();
 		final double price;
-		if (transactionType == TransactionType.USER || transactionType == TransactionType.MARGIN_CALL) {
+		if (Arrays.asList(TransactionType.USER, TransactionType.USER_POSITION, TransactionType.MARGIN_CALL).contains(transactionType)) {
 			if (closeTrade.isLong()) {
 				price = tick.getBid();
 			} else {
@@ -130,26 +132,35 @@ public final class Account {
 		} else {
 			throw new GigawattException("Unknown TransactionType on closeTrade().  Please yell at Mojo.");
 		}
+		final int transactionNumber = transactionManager.getNextTransactionNumber();
 		close.setPrice(price);
+		close.setTimestamp(timeServer.getTime());
+		close.setTransactionNumber(transactionNumber);
+		close.setTransactionLink(closeTrade.getTransactionNumber());
 		closeTrade.setClose(close);
 
 		// balance adjustment
 		final double profitInQuoteCurrency = closeTrade.getRealizedPL();
 		final FXPair pair = closeTrade.getPair();
-		final double profitInHomeCurrency;
+		double profitInHomeCurrency;
 		if (pair.getQuote().equals(getHomeCurrency())) {
 			profitInHomeCurrency = profitInQuoteCurrency;
 		} else {
 			final FXTick convert = UtilMath.getConverstionRate(pair.getQuote(), getHomeCurrency(), tickTable);
 			profitInHomeCurrency = profitInQuoteCurrency * convert.getMean();
 		}
-		balance += profitInHomeCurrency;
-		realizedPL += profitInHomeCurrency;
+		profitInHomeCurrency = UtilMath.round(profitInHomeCurrency, 8);
+		final BigDecimal bdProfitInHomeCurrency = new BigDecimal(profitInHomeCurrency);
+		balance = balance.add(bdProfitInHomeCurrency);
+		realizedPL = realizedPL.add(bdProfitInHomeCurrency);
 
 		tradeManager.closeTrade(closeTrade, transactionType);
 		closedTrades.add(closeTrade);
-		// todo: add transaction
-		// todo: interest calc
+
+		// TODO: proper interest calc
+		final double interest = 0;
+		final Transaction t = transactionManager.createCloseTransaction(closeTrade, this, transactionType, profitInHomeCurrency, interest);
+		addTransaction(t);
 	}
 
 	public void close(final String position) throws OAException {
@@ -162,7 +173,7 @@ public final class Account {
 		final int size = positionTrades.size();
 		for (int i = 0; i < size; i++) {
 			final MarketOrder closeTrade = positionTrades.get(i);
-			closeTrade(closeTrade, TransactionType.USER);
+			closeTrade(closeTrade, TransactionType.USER_POSITION);
 			trades.remove(closeTrade);
 		}
 		thePosition.close();
@@ -269,7 +280,7 @@ public final class Account {
 		}
 		final int transactionNumber = transactionManager.getNextTransactionNumber();
 		mo.setTransactionNumber(transactionNumber);
-
+		mo.setTimestamp(timeServer.getTime());
 		tradeManager.executeTrade(mo, this, transactionType);
 		final MarketOrder newOrder = (MarketOrder) mo.clone();
 		trades.add(newOrder);
@@ -281,7 +292,15 @@ public final class Account {
 		}
 		position.addMarketOrder(newOrder);
 
+		final Transaction t = transactionManager.createExecuteMarketTransaction(mo, this, transactionType);
+		addTransaction(t);
 		//TODO: Implement execute(MarketOrder) properly (still needs to check for reversal)
+	}
+
+	private void addTransaction(final Transaction t) {
+		if (!transactions.contains(t)) {
+			transactions.add(t);
+		}
 	}
 
 	private boolean validatePurchase(final MarketOrder mo) throws AccountException {
@@ -303,7 +322,7 @@ public final class Account {
 	}
 
 	public double getBalance() throws AccountException {
-		return balance;
+		return balance.doubleValue();
 	}
 
 	public String getHomeCurrency() {
@@ -339,7 +358,6 @@ public final class Account {
 
 			totalPositionValue += UtilMath.calculatePositionValue(pair, units, homeCurrency, tickTable);
 		}
-
 		return totalPositionValue;
 	}
 
@@ -399,7 +417,7 @@ public final class Account {
 
 	public Transaction getTransactionWithId(final int transactionNumber) throws AccountException {
 		for (final Transaction transaction : transactions) {
-			if (transaction.getTransationNumber() == transactionNumber) {
+			if (transaction.getTransactionNumber() == transactionNumber) {
 				return transaction;
 			}
 		}
@@ -470,7 +488,7 @@ public final class Account {
 	}
 
 	public double getRealizedPL() throws AccountException {
-		return realizedPL;
+		return realizedPL.doubleValue();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -490,11 +508,11 @@ public final class Account {
 		try {
 			String result = "Account " + accountName + " (" + accountId + "): ";
 
-			result += "Balance [" + UtilMath.round(balance, 2) + "]\t";
+			result += "Balance [" + UtilMath.round(balance.doubleValue(), 2) + "]\t";
 			result += "Trades [" + trades.size() + "]\t";
 			result += "Orders [" + orders.size() + "]\t";
 			result += "marginCall [" + UtilMath.round(getNetAssetValue(), 2) + " " + getMarginCallRate() + "]\t";
-			result += "R P/L [" + UtilMath.round(realizedPL, 2) + "]";
+			result += "R P/L [" + UtilMath.round(realizedPL.doubleValue(), 2) + "]";
 
 			return result;
 		} catch (AccountException e) {
