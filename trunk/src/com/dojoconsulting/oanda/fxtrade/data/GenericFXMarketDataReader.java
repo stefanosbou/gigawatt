@@ -96,5 +96,17 @@ public abstract class GenericFXMarketDataReader implements IMarketData {
 		public void setEmpty(final boolean empty) {
 			this.empty = empty;
 		}
+
+		public long getTimeInMillis() {
+			return timeInMillis;
+		}
+
+		public double getBid() {
+			return bid;
+		}
+
+		public double getAsk() {
+			return ask;
+		}
 	}
 }

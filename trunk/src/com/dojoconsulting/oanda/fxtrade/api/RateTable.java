@@ -1,6 +1,8 @@
 package com.dojoconsulting.oanda.fxtrade.api;
 
 import com.dojoconsulting.gigawatt.core.IHistoryManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import java.util.Map;
  * currency pairs) and history data for these as well.
  */
 public final class RateTable {
+	private static Log logger = LogFactory.getLog(RateTable.class);
 	private Map tickTable;
 	private IHistoryManager historyManager;
 
@@ -30,12 +33,14 @@ public final class RateTable {
 		}
 	};
 
-
 	public RateTable() {
 		this.tickTable = new HashMap();
 	}
 
 	public FXTick getRate(final FXPair pair) throws RateTableException {
+		if (!tickTable.containsKey(pair)) {
+			logger.warn("Request for tick on pair " + pair + " returned null");
+		}
 		return (FXTick) tickTable.get(pair);
 	}
 

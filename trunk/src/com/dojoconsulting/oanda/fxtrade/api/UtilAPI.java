@@ -26,6 +26,10 @@ public class UtilAPI {
 		return a;
 	}
 
+	public static Transaction createTransaction(final double amount, final double balance, final int completionCode, final int diaspora, final double interest, final double margin, final FXPair pair, final double price, final double stopLoss, final double takeProfit, final long timestamp, final int transactionLink, final int transactionNumber, final long units, final String type, final long expiry, final double lowerBound, final double upperBound, final double profitLoss) {
+		return new Transaction(amount, balance, completionCode, diaspora, interest, margin, pair, price, stopLoss, takeProfit, timestamp, transactionLink, transactionNumber, units, type, expiry, lowerBound, upperBound, profitLoss);
+	}
+
 	public static void processAccount(final Account account) {
 		account.process();
 	}
